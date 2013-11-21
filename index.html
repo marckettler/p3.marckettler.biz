@@ -1,176 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Batter's Box Test</title>
+    <title>Baseball Scorecard</title>
+    <script src="js/score-card.js"></script>
     <script>
-        var AB_NUM = "88";
-        var CANVAS_WIDTH = 50;
-        var CANVAS_HEIGHT = 50;
-        var abArray = new Array(9);
+        var AB_NUM = "00";
+        var scoreCard;
         function pageLoad()
         {
-            for (var i = 0; i < 9; i++)
-            {
-                abArray[i] = new Array(9);
-                for (var j = 0; j < 9; j++)
-                {
-                    var _tempCanvas = $('<canvas/>', {id: i+""+j, class: "box"});
-                    abArray[i][j] = new abBox(_tempCanvas,1);
-                    $('body').prepend(_tempCanvas);
-                }
-                $('body').prepend("<br>");
-            }
-            $('.box').each(function(i){
-                draw ($(this)[0],i);
-            });
-
-        }
-
-        function abBox(canvas,abNum)
-        {
-            this.canvas = canvas;
-            this.abNum = abNum;
-        }
-
-        function processAB()
-        {
-            console.log(AB_NUM);
-            var canvas = $("#"+AB_NUM)[0];
-            var ctx = canvas.getContext('2d');
-            onFirst(ctx,canvas);
-            hitRight(ctx,canvas);
-            AB_NUM--;
-        }
-
-        function draw(canvas , i)
-        {
-            canvas.height = CANVAS_HEIGHT;
-            canvas.width = CANVAS_WIDTH;
-            if (canvas.getContext) {
-                var ctx = canvas.getContext('2d');
-                ctx.font = canvas.width/6+'px Sans-Serif';
-                ctx.fillText  (i+1, canvas.width/40, canvas.width/6);
-                ctx.strokeRect(0,0,canvas.width,canvas.height);
-                ctx.beginPath();
-                ctx.moveTo(canvas.width/4,canvas.width/2);
-                ctx.lineTo(canvas.width/2,canvas.width/4);
-                ctx.lineTo(canvas.width*(3/4),canvas.width/2);
-                ctx.lineTo(canvas.width/2,canvas.width*(3/4));
-                ctx.lineTo(canvas.width/4,canvas.width/2);
-                ctx.stroke();
-                drawMound(ctx,canvas,"brown");
-            }
-        }
-
-        function onFirst(ctx,canvas)
-        {
-            //make line slightly bigger
-            ctx.lineWidth = 3;
-            //Path for line from home to 1st.
-            ctx.beginPath();
-            ctx.moveTo(canvas.width/2,canvas.width*(3/4));
-            ctx.lineTo(canvas.width*(3/4),canvas.width/2);
-            ctx.stroke();
-            //reset original lineWidth
-            ctx.lineWidth = 1;
-        }
-
-        function onSecond(ctx,canvas)
-        {
-            //make line slightly bigger
-            ctx.lineWidth = 2;
-            //Path for line from home to 2nd.
-            ctx.beginPath();
-            ctx.moveTo(canvas.width*(3/4),canvas.width/2);
-            ctx.lineTo(canvas.width/2,canvas.width/4);
-            ctx.stroke();
-            //reset original lineWidth
-            ctx.lineWidth = 1;
-        }
-
-        function onThird(ctx,canvas)
-        {
-            //make line slightly bigger
-            ctx.lineWidth = 2;
-            //Path for line from home to 2nd.
-            ctx.beginPath();
-            ctx.moveTo(canvas.width/2,canvas.width/4);
-            ctx.lineTo(canvas.width/4,canvas.width/2);
-            ctx.stroke();
-            //reset original lineWidth
-            ctx.lineWidth = 1;
-        }
-
-        function endInning(ctx,canvas)
-        {
-            ctx.beginPath();
-            ctx.moveTo(canvas.width,canvas.height);
-            ctx.lineTo(canvas.width*(3/4),canvas.height);
-            ctx.lineTo(canvas.width,canvas.height*(3/4));
-            ctx.fill();
-        }
-
-        function drawMound(ctx,canvas,color)
-        {
-            // draw mound - will be black if a run scored.
-            ctx.beginPath();
-            ctx.arc(canvas.width/2, canvas.height/2, canvas.height/10, 0, 2 * Math.PI, false);
-            ctx.fillStyle = color;
-            ctx.fill();
-        }
-
-        function runScored(ctx,canvas)
-        {
-            //make line slightly bigger
-            ctx.lineWidth = 2;
-            //Path for line from 3rd to home.
-            ctx.beginPath();
-            ctx.moveTo(canvas.width/4,canvas.width/2);
-            ctx.lineTo(canvas.width/2,canvas.width*(3/4));
-            ctx.stroke();
-            drawMound(ctx,canvas,"black");
-            //reset original lineWidth
-            ctx.lineWidth = 1;
-        }
-
-        function hitLeft(ctx,canvas)
-        {
-            //make line slightly bigger
-            ctx.lineWidth = 2;
-            //Path for line from home to left field.
-            ctx.beginPath();
-            ctx.moveTo(canvas.width/2,canvas.width*(3/4));
-            ctx.lineTo(canvas.width/4,canvas.width/8);
-            ctx.stroke();
-            //reset original lineWidth
-            ctx.lineWidth = 1;
-        }
-
-        function hitRight(ctx,canvas)
-        {
-            ctx.lineWidth = 2;
-            //Path for line from home to right field.
-            ctx.beginPath();
-            ctx.moveTo(canvas.width/2,canvas.width*(3/4));
-            ctx.lineTo(canvas.width*(3/4),canvas.width/8);
-            ctx.stroke();
-            ctx.lineWidth = 1;
-        }
-
-        function hitCenter(ctx,canvas)
-        {
-            ctx.lineWidth = 2;
-            //Path for line from home to center field.
-            ctx.beginPath();
-            ctx.moveTo(canvas.width/2,canvas.width*(3/4));
-            ctx.lineTo(canvas.width/2,canvas.width/8);
-            ctx.stroke();
-            ctx.lineWidth = 1;
+            var canvas = $('<canvas/>', {id: "scorecard"});
+            $('body').append(canvas);
+            scoreCard = new ScoreCard(canvas[0],9);
+            $('body').append("<br>");
+            $('body').append('<button type="button" onclick="scoreCard.processAB()">Process AB</button>');
         }
     </script>
 </head>
 <body onload="pageLoad()">
-    <button type="button" onclick="processAB()">Process AB</button>
     <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 </body>
 </html>
