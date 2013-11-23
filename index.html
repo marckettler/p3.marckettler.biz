@@ -12,11 +12,15 @@
             $('body').append(canvas);
             scoreCard = new ScoreCard(canvas[0],9);
             $('body').append("<br>");
-            $('body').append('<button type="button" onclick="scoreCard.processAB()">Process AB</button>');
+            $('body').append('<button type="button" onclick="scoreCard.single()">Single</button>');
+            $('body').append('<button type="button" onclick="scoreCard.double()">Double</button>');
+            $('body').append('<button type="button" onclick="scoreCard.triple()">Triple</button>');
+            $('body').append('<button type="button" onclick="scoreCard.homerun()">Home Run!</button>');
+            $('body').append('<button type="button" onclick="scoreCard.walk()">Walk</button>');
         }
     </script>
 </head>
 <body onload="pageLoad()">
-    <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="application/javascript" src="js/jquery-2.0.3.min.js"></script>
 </body>
 </html>
