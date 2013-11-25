@@ -2,25 +2,28 @@
 <html>
 <head>
     <title>Baseball Scorecard</title>
+    <link rel="stylesheet" href="css/p3.css">
     <script src="js/score-card.js"></script>
     <script>
-        var AB_NUM = "00";
         var scoreCard;
         function pageLoad()
         {
-            var canvas = $('<canvas/>', {id: "scorecard"});
-            $('body').append(canvas);
-            scoreCard = new ScoreCard(canvas[0],9);
-            $('body').append("<br>");
-            $('body').append('<button type="button" onclick="scoreCard.single()">Single</button>');
-            $('body').append('<button type="button" onclick="scoreCard.double()">Double</button>');
-            $('body').append('<button type="button" onclick="scoreCard.triple()">Triple</button>');
-            $('body').append('<button type="button" onclick="scoreCard.homerun()">Home Run!</button>');
-            $('body').append('<button type="button" onclick="scoreCard.walk()">Walk</button>');
+            scoreCard = new ScoreCard($("#bg"),$("#fg"),9);
         }
     </script>
 </head>
 <body onload="pageLoad()">
+    <div class="container">
+        <canvas class="bg" id="bg"></canvas>
+        <canvas class="fg" id="fg"></canvas>
+    </div>
+    <div>
+        <button type="button" onclick="scoreCard.single()">Single</button>
+        <button type="button" onclick="scoreCard.double()">Double</button>
+        <button type="button" onclick="scoreCard.triple()">Triple</button>
+        <button type="button" onclick="scoreCard.homerun()">Home Run!</button>
+        <button type="button" onclick="scoreCard.walk()">Walk</button>
+    </div>
     <script type="application/javascript" src="js/jquery-2.0.3.min.js"></script>
 </body>
 </html>

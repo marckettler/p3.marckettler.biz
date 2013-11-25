@@ -3,17 +3,34 @@
  */
 
 
-function ScoreCard(canvas,batters)
+/**
+ * @desc A Baseball Scorecard
+ * @param canvas The canvas this scorecard is drawn on
+ * @param batters The number of batters in the lineup
+ * @constructor
+ */
+function ScoreCard(bg,fg,batters)
 {
-    this.canvas = canvas;
+    bg.show();
+    fg.hide();
+
+    this.canvas = bg[0];
+    this.overlay = fg[0];
     this.canvas.width = 1000;
     this.canvas.height = 500;
+    this.overlay.width = 1000;
+    this.overlay.width = 500;
+
     this.currentAB = 1;
     this.outs = 0;
     this.playerBoxes = new Array(batters);
     this.eventBoxes = new Array(batters);
+    this.onFirst = null;
+    this.onSecond = null;
+    this.onThird = null;
+
     this.abNum = 1;
-    this.x = 100;
+    this.x = 120;
     this.y = 0;
 
     for (var i = 0; i < this.eventBoxes.length; i++)
@@ -21,13 +38,14 @@ function ScoreCard(canvas,batters)
         this.eventBoxes[i] = new Array(10);
     }
 
-    //draw innings
-    drawInnings(this.x,this.y);
+    //draw score card header
+    drawScoreCardHeader(this.canvas,this.overlay);
+    drawInnings(this.canvas,this.x,this.y);
     this.y = 25;
     //draw player boxes
     for (var i = 0; i < this.eventBoxes.length; i++)
     {
-        this.playerBoxes[i] = new PlayerBox(canvas,"Player "+(i+1),0,this.y);
+        this.playerBoxes[i] = new PlayerBox(this.canvas,"Player "+(i+1),0,this.y);
         this.playerBoxes[i].draw();
         this.y += 50;
     }
@@ -36,7 +54,7 @@ function ScoreCard(canvas,batters)
     {
         for (var j = 0; j < this.eventBoxes.length; j++)
         {
-            this.eventBoxes[j][i] = new EventBox(canvas,this.abNum++,this.x,this.y);
+            this.eventBoxes[j][i] = new EventBox(this.canvas,this.abNum++,this.x,this.y);
             this.eventBoxes[j][i].draw();
             this.y += 50;
         }
@@ -44,6 +62,9 @@ function ScoreCard(canvas,batters)
         this.y = 25;
     }
 
+    /**
+     * private function that finds the EventBox of the current Batter
+     */
     function findEventBox(eventBoxes,boxID)
     {
         for(var i=0;i<eventBoxes.length;i++)
@@ -56,10 +77,12 @@ function ScoreCard(canvas,batters)
                 }
             }
         }
-
     }
 
-    function drawInnings(x,y)
+    /**
+     * private function that Draws the inning number at the top of the ScoreCard
+     */
+    function drawInnings(canvas,x,y)
     {
         var width = 50;
         var height = 25;
@@ -67,10 +90,25 @@ function ScoreCard(canvas,batters)
         ctx.font = height/2+'px Sans-Serif';
         for(var i=0;i<10;i++)
         {
-            ctx.fillText  ((i+1).toString(), x+(width/3), y+(height/1.33));
+            ctx.fillText  ((i+1).toString(), x+(width/2.5), y+(height/1.33));
             ctx.strokeRect(x,y,width,height);
             x += 50;
         }
+    }
+
+    function drawScoreCardHeader(canvas,overlay)
+    {
+        console.log(canvas);
+        var ctx = canvas.getContext("2d");
+        ctx.font = 25/2+'px Sans-Serif';
+        ctx.fillText  ("#", 0+(15/2.5), 0+(25/1.33));
+        ctx.strokeRect(0,0,20,25);
+        ctx.fillText  ("Name", 20+(80/4.5), 0+(25/1.33));
+        ctx.strokeRect(20,0,80,25);
+        ctx.fillText  ("P", 100+(15/2.5), 0+(25/1.33));
+        ctx.strokeRect(100,0,20,25);
+        ctx = overlay.getContext("2d");
+        ctx.fillRect(0,0,50,50);
     }
 
     this.single = single;
@@ -78,6 +116,7 @@ function ScoreCard(canvas,batters)
     {
         var currentEventBox = findEventBox(this.eventBoxes,this.currentAB);
         currentEventBox.onFirst();
+        this.onFirst = currentEventBox;
         this.currentAB++;
     }
 
@@ -122,7 +161,7 @@ function ScoreCard(canvas,batters)
 
 function PlayerBox(canvas,name,x,y)
 {
-    var width = 100;
+    var width = 120;
     var height = 25;
     this.x = x;
     this.y = y;
@@ -134,9 +173,26 @@ function PlayerBox(canvas,name,x,y)
     {
         var ctx = canvas.getContext("2d");
         ctx.font = height/2+'px Sans-Serif';
-        ctx.fillText  (this.name,x+(width/3), y+(height/1.33));
+        // Entire box probably redundant
+        // use below line to indicate current batter.
+        // ctx.fillStyle = "red";
+        // ctx.fillRect(x,y,width,height);
         ctx.strokeRect(x,y,width,height);
-        ctx.strokeRect(x,y+25,width,height);
+        ctx.fillStyle = "white";
+        // Player's # box
+        ctx.fillRect(x,y,width/6,height);
+        ctx.strokeRect(x,y,width/6,height);
+        // Player's P box
+        ctx.fillRect(x+(width*(5/6)),y,width/6,height);
+        ctx.strokeRect(x+(width*(5/6)),y,width/6,height);
+
+        ctx.fillStyle = "black";
+        ctx.strokeRect(x,y+height,width,height);
+        ctx.strokeRect(x,y+height,width/6,height);
+        ctx.strokeRect(x+(width*(5/6)),y+height,width/6,height);
+        ctx.fillText  ("10",x+(width/40), y+(height/1.33));
+        ctx.fillText  (this.name,x+(width/4), y+(height/1.33));
+        ctx.fillText  ("10",x+(width *.87), y+(height/1.33));
     }
 
 }
@@ -154,7 +210,7 @@ function EventBox(canvas,abNum,x,y)
     function draw()
     {
         this.ctx.font = BOX_W_H/6+'px Sans-Serif';
-        this.ctx.fillText  (this.abNum, this.x+(BOX_W_H/40), this.y+(BOX_W_H/6));
+        this.ctx.fillText  (this.abNum, this.x+(BOX_W_H/30), this.y+(BOX_W_H/5));
         this.ctx.strokeRect(this.x,this.y,BOX_W_H,BOX_W_H);
         this.ctx.beginPath();
         this.ctx.moveTo(this.x+(BOX_W_H/4),this.y+(BOX_W_H/2));
@@ -163,6 +219,16 @@ function EventBox(canvas,abNum,x,y)
         this.ctx.lineTo(this.x+(BOX_W_H/2),this.y+(BOX_W_H*(3/4)));
         this.ctx.lineTo(this.x+(BOX_W_H/4),this.y+(BOX_W_H/2));
         this.ctx.stroke();
+
+        // runner on first
+        this.ctx.fillText("20",this.x+(BOX_W_H *.80),this.y+(BOX_W_H/2));
+    }
+
+    this.magnify = magnify;
+    function magnify()
+    {
+        BOX_W_H = 300;
+
     }
 
     this.drawMound = drawMound;
