@@ -129,7 +129,6 @@ function ScoreCard(canvas,overlay,batters)
     {
         this.currentAB.playerBox.currentAB = false;
         this.currentAB.playerBox.draw();
-        console.log(this.currentAB.playerBox);
         this.currentAB = this.findEventBox(this.currentAB.abNum + 1);
         this.currentAB.playerBox.currentAB = true;
         this.currentAB.playerBox.draw();
@@ -150,40 +149,6 @@ function ScoreCard(canvas,overlay,batters)
         }
     }
 
-    this.single = single;
-    function single()
-    {
-        this.onFirst = this.currentAB.playerBox.player;
-        this.currentAB.hitRight();
-        this.nextAB();
-    }
-
-    this.double = double;
-    function double()
-    {
-        this.onSecond = this.currentAB.playerBox.player;
-        this.currentAB.hitRight();
-        this.nextAB();
-    }
-
-    this.triple = triple;
-    function triple()
-    {
-        this.onThird = this.currentAB.playerBox.player;
-        this.currentAB.hitLeft();
-        this.nextAB();
-    }
-
-    this.homerun = homerun;
-    function homerun()
-    {
-        this.currentAB.onFirst();
-        this.currentAB.onSecond();
-        this.currentAB.onThird();
-        this.currentAB.runScored();
-        this.currentAB = this.findEventBox(this.currentAB.abNum + 1);
-    }
-
     this.recordOut = recordOut;
     function recordOut()
     {
@@ -193,14 +158,6 @@ function ScoreCard(canvas,overlay,batters)
             this.currentAB.endInning();
             this.endInning();
         }
-        this.currentAB = this.findEventBox(this.currentAB.abNum + 1);
-    }
-
-    this.walk = walk;
-    function walk()
-    {
-        this.currentAB.onFirst();
-        this.onFirst = this.currentAB;
         this.currentAB = this.findEventBox(this.currentAB.abNum + 1);
     }
 
@@ -257,23 +214,23 @@ function ScoreCard(canvas,overlay,batters)
         {
             // Single
             case 'S':
-                // TODO Base Specifiers
+                this.onFirst = this.currentAB.playerBox.player;
                 break;
             // Double
             case 'D':
-                // TODO Base Specifiers
+                this.onSecond = this.currentAB.playerBox.player;
                 break;
             // Triple
             case 'T':
-                // TODO Base Specifiers
+                this.onThird = this.currentAB.playerBox.player;
                 break;
             // Home Run
             case 'H':
-                // TODO Base Specifiers
+                this.currentAB.runScored();
                 break;
             // Walk
             case 'W':
-                // TODO Base Specifiers
+                this.onFirst = this.currentAB;
                 break;
             // Intentional Walk
             case 'I':
@@ -291,8 +248,9 @@ function ScoreCard(canvas,overlay,batters)
             case 'B':
                 // TODO Base Specifiers
                 break;
-
         }
+        this.currentAB.hit(abString);
+        this.nextAB();
     }
 }
 
@@ -395,14 +353,14 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.font = font;
     }
 
-    this.drawMound = drawMound;
-    function drawMound(color)
+    this.runScored = runScored;
+    function runScored()
     {
         var originalFill = this.ctx.fillStyle;
         // draw mound - will be black if a run scored.
         this.ctx.beginPath();
         this.ctx.arc(this.x+(BOX_W_H/2), this.y+(BOX_W_H/2), BOX_W_H/12, 0, 2 * Math.PI, false);
-        this.ctx.fillStyle = color;
+        this.ctx.fillStyle = 'black';
         this.ctx.fill();
         this.ctx.fillStyle = originalFill;
     }
@@ -412,15 +370,6 @@ function EventBox(canvas,playerBox,abNum,x,y)
     {
         // runner on first
         this.ctx.fillText(number,this.x+(BOX_W_H *.8),this.y+(BOX_W_H *.5));
-        /* make line slightly bigger
-        this.ctx.lineWidth = 3;
-        //Path for line from home to 1st.
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.x+(BOX_W_H/2),this.y+(BOX_W_H*(3/4)));
-        this.ctx.lineTo( this.x+(BOX_W_H*(3/4)),this.y+(BOX_W_H/2));
-        this.ctx.stroke();
-        //reset original lineWidth
-        this.ctx.lineWidth = 1;*/
     }
 
     this.toSecond = toSecond;
@@ -467,15 +416,6 @@ function EventBox(canvas,playerBox,abNum,x,y)
     function onThird(number)
     {
         this.ctx.fillText(number,this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.5));
-        /* make line slightly bigger
-        this.ctx.lineWidth = 3;
-        //Path for line from home to 2nd.
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.x+(BOX_W_H/2),this.y+(BOX_W_H/4));
-        this.ctx.lineTo(this.x+(BOX_W_H/4),this.y+(BOX_W_H/2));
-        this.ctx.stroke();
-        //reset original lineWidth
-        this.ctx.lineWidth = 1;*/
     }
 
     this.endInning = endInning;
@@ -486,21 +426,6 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.lineTo(this.x+(BOX_W_H*(3/4)),this.y+BOX_W_H);
         this.ctx.lineTo(this.x+BOX_W_H,this.y+(BOX_W_H*(3/4)));
         this.ctx.fill();
-    }
-
-    this.runScored = runScored;
-    function runScored()
-    {
-        //make line slightly bigger
-        this.ctx.lineWidth = 3;
-        //Path for line from 3rd to home.
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.x+(BOX_W_H/4),this.y+(BOX_W_H/2));
-        this.ctx.lineTo(this.x+(BOX_W_H/2),this.y+(BOX_W_H*(3/4)));
-        this.ctx.stroke();
-        this.drawMound("black");
-        //reset original lineWidth
-        this.ctx.lineWidth = 1;
     }
 
     this.hitLeft = hitLeft;
@@ -515,6 +440,12 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.stroke();
         //reset original lineWidth
         this.ctx.lineWidth = 1;
+    }
+
+    this.hit= hit;
+    function hit(type)
+    {
+        this.ctx.fillText(type,this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.90));
     }
 
     this.hitRight = hitRight;
