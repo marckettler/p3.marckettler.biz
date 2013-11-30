@@ -306,6 +306,22 @@ function ScoreCard(canvas,overlay,batters)
             // Home Run
             case 'H':
                 this.currentAB.runScored();
+
+                if(this.onFirst!=null)
+                {
+                    this.onFirst.runScored();
+                    this.onFirst = null;
+                }
+                if(this.onSecond!=null)
+                {
+                    this.onSecond.runScored();
+                    this.onSecond = null;
+                }
+                if(this.onThird!=null)
+                {
+                    this.onThird.runScored();
+                    this.onThird = null;
+                }
                 break;
             // Walk
             case 'W':
@@ -365,25 +381,28 @@ function ScoreCard(canvas,overlay,batters)
                 alert(abString + " not complete");
                 break;
             case '1-H':
-                alert(abString + " not complete");
+                this.onFirst.runScored();
+                this.onFirst = null;
                 break;
             case '1xH':
                 alert(abString + " not complete");
                 break;
             case '2-3':
-                alert(abString + " not complete");
+                this.onThird = this.onSecond;
                 break;
             case '2x3':
                 alert(abString + " not complete");
                 break;
             case '2-H':
-                alert(abString + " not complete");
+                this.onSecond.runScored();
+                this.onSecond = null;
                 break;
             case '2xH':
                 alert(abString + " not complete");
                 break;
             case '3-H':
-                alert(abString + " not complete");
+                this.onThird.runScored();
+                this.onThird = null;
                 break;
             case '3xH':
                 alert(abString + " not complete");
