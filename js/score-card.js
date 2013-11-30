@@ -345,47 +345,48 @@ function ScoreCard(canvas,overlay,batters)
     this.postAB = postAB;
     function postAB(abString)
     {
-        // At Bat Events
+
         switch(abString)
         {
-            // Single
-            case 'S':
-                this.onFirst = this.currentAB;
+            // 1st to 2nd
+            case '1-2':
+                this.onSecond = this.onFirst;
                 break;
-            // Double
-            case 'D':
-                this.onSecond = this.currentAB;
+            // PO 1st to 2nd
+            case '1x2':
+                this.currentAB.outToSecond(abString);
                 break;
-            // Triple
-            case 'T':
-                this.onThird = this.currentAB;
+            // 1st to 3rd
+            case '1-3':
+                this.onThird = this.onFirst;
                 break;
-            // Home Run
-            case 'H':
-                this.currentAB.runScored();
+            // PO 1st to 3rd
+            case '1x3':
+                alert(abString + " not complete");
                 break;
-            // Walk
-            case 'W':
-                this.onFirst = this.currentAB;
+            case '1-H':
+                alert(abString + " not complete");
                 break;
-            // Intentional Walk
-            case 'I':
-                this.onFirst = this.currentAB;
+            case '1xH':
+                alert(abString + " not complete");
                 break;
-            // Strikeout
-            case 'K':
-                this.recordOut(this.currentAB);
+            case '2-3':
+                alert(abString + " not complete");
                 break;
-            // Fielder's choice
-            case 'F':
-                // TODO Base Specifiers
+            case '2x3':
+                alert(abString + " not complete");
                 break;
-            // Hit By Pitch or B is for Beanball
-            case 'B':
-                this.onFirst = this.currentAB;
+            case '2-H':
+                alert(abString + " not complete");
                 break;
-            default :
-                alert(abString);
+            case '2xH':
+                alert(abString + " not complete");
+                break;
+            case '3-H':
+                alert(abString + " not complete");
+                break;
+            case '3xH':
+                alert(abString + " not complete");
                 break;
         }
     }
