@@ -5,12 +5,17 @@ div{
 }
 
 div.container{
-    height: 500px;
+    height: 555px;
+}
+
+div.controlArea{
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
 }
 
 canvas{
     position: absolute;
     top: 0px;
     left: 0px;
-
 }

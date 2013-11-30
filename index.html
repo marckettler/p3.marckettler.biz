@@ -16,15 +16,41 @@
     <div class="container">
         <canvas class="bg" id="bg"></canvas>
         <canvas class="fg" id="fg"></canvas>
-    </div>
-    <div>
-        <button type="button" onclick="scoreCard.processAB('S')">Single</button>
-        <button type="button" onclick="scoreCard.processAB('D')">Double</button>
-        <button type="button" onclick="scoreCard.processAB('T')">Triple</button>
-        <button type="button" onclick="scoreCard.processAB('H')">Home Run!</button>
-        <button type="button" onclick="scoreCard.processAB('W')">Walk</button>
-        <button type="button" onclick="scoreCard.recordOut()">Out</button>
-        <button type="button" onclick="scoreCard.preEvent('SB12')">Pre Event</button>
+        <div class="controlArea">
+            <div class="preAB">
+                <button type="button" onclick="scoreCard.preAB('SB12')">Steal 2nd</button>
+                <button type="button" onclick="scoreCard.preAB('SB23')">Steal 3rd</button>
+                <button type="button" onclick="scoreCard.preAB('SB3H')">Steal Home</button>
+                <button type="button" onclick="scoreCard.preAB('CS12')">CS 2nd</button>
+                <button type="button" onclick="scoreCard.preAB('CS23')">CS 3rd</button>
+                <button type="button" onclick="scoreCard.preAB('CS3H')">CS Home</button>
+                <button type="button" onclick="scoreCard.preAB('PO1')">PO 1st</button>
+                <button type="button" onclick="scoreCard.preAB('PO2')">PO 2nd</button>
+                <button type="button" onclick="scoreCard.preAB('PO3')">PO 3rd</button>
+            </div>
+            <div class="AB">
+                <button type="button" onclick="scoreCard.processAB('S')">Single</button>
+                <button type="button" onclick="scoreCard.processAB('D')">Double</button>
+                <button type="button" onclick="scoreCard.processAB('T')">Triple</button>
+                <button type="button" onclick="scoreCard.processAB('H')">Home Run!</button>
+                <button type="button" onclick="scoreCard.processAB('W')">Walk</button>
+                <button type="button" onclick="scoreCard.processAB('K')">Out</button>
+            </div>
+            <div class="postAB">
+                <button type="button" onclick="scoreCard.postAB('1-2')">1-2</button>
+                <button type="button" onclick="scoreCard.postAB('1x2')">1x2</button>
+                <button type="button" onclick="scoreCard.postAB('1-3')">1-3</button>
+                <button type="button" onclick="scoreCard.postAB('1x3')">1x3</button>
+                <button type="button" onclick="scoreCard.postAB('1-H')">1-H</button>
+                <button type="button" onclick="scoreCard.postAB('1xH')">1xH</button>
+                <button type="button" onclick="scoreCard.postAB('2-3')">2-3</button>
+                <button type="button" onclick="scoreCard.postAB('2X3')">2x3</button>
+                <button type="button" onclick="scoreCard.postAB('2-H')">2-H</button>
+                <button type="button" onclick="scoreCard.postAB('2xH')">2xH</button>
+                <button type="button" onclick="scoreCard.postAB('3-H')">3-H</button>
+                <button type="button" onclick="scoreCard.postAB('3xH')">3xH</button>
+            </div>
+        </div>
     </div>
     <script type="application/javascript" src="js/jquery-2.0.3.min.js"></script>
 </body>

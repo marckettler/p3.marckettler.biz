@@ -16,12 +16,17 @@ function ScoreCard(canvas,overlay,batters)
     this.overlay = overlay;
     this.canvas[0].width = 1000;
     this.canvas[0].height = 500;
+
+    /*
+    not sure I am going to do anything with the overlay
     this.overlay.css("width","800");
     this.overlay.css("height", "500");
     this.overlay.css("opacity","0");
     this.overlay.css("background-color","green");
+    */
 
     this.abNum = 1;
+    this.inning = 1;
     this.outs = 0;
     this.currentAB = null;
     this.onFirst = null;
@@ -58,7 +63,6 @@ function ScoreCard(canvas,overlay,batters)
             this.eventBoxes[j][i] = new EventBox(this.canvas[0],this.playerBoxes[j],this.abNum,this.x,this.y);
             this.eventBoxes[j][i].draw();
             this.y += 50;
-        // console.log((i+1)+"%"+this.abNum+"="+ ((i+1)%this.abNum) );
             this.abNum++;
         }
         this.x += 50;
@@ -69,6 +73,8 @@ function ScoreCard(canvas,overlay,batters)
     this.currentAB = this.eventBoxes[0][0];
     this.currentAB.playerBox.currentAB = true;
     this.currentAB.playerBox.draw();
+    // end constructor
+
     /**
      *
      * @param eventBoxes
@@ -91,7 +97,10 @@ function ScoreCard(canvas,overlay,batters)
     }
 
     /**
-     * private function that Draws the inning number at the top of the ScoreCard
+     *
+     * @param canvas
+     * @param x
+     * @param y
      */
     function drawHeading(canvas,x,y)
     {
@@ -103,6 +112,11 @@ function ScoreCard(canvas,overlay,batters)
         ctx.strokeRect(x,y,width,height);
     }
 
+    /**
+     *
+     * @param canvas
+     * @param overlay
+     */
     function drawScoreCardHeader(canvas,overlay)
     {
         var ctx = canvas.getContext("2d");
@@ -115,13 +129,24 @@ function ScoreCard(canvas,overlay,batters)
         ctx.strokeRect(100,0,20,25);
     }
 
+    /**
+     *
+     * @type {Function}
+     */
     this.endInning = endInning;
     function endInning()
     {
         this.outs = 0;
+        this.inning++;
         this.onFirst = null;
         this.onSecond = null;
         this.onThird = null;
+    }
+
+    this.startInning = startInning;
+    function startInning()
+    {
+        this.currentAB.startInning(this.inning);
     }
 
     this.nextAB = nextAB
@@ -135,61 +160,115 @@ function ScoreCard(canvas,overlay,batters)
 
         if(this.onFirst!=null)
         {
-            this.currentAB.onFirst(this.onFirst.number);
+            this.currentAB.onFirst(this.onFirst.playerBox.player.number);
         }
 
         if(this.onSecond!=null)
         {
-            this.currentAB.onSecond(this.onSecond.number);
+            this.currentAB.onSecond(this.onSecond.playerBox.player.number);
         }
 
         if(this.onThird!=null)
         {
-            this.currentAB.onThird(this.onThird.number);
+            this.currentAB.onThird(this.onThird.playerBox.player.number);
         }
     }
 
     this.recordOut = recordOut;
-    function recordOut()
+    function recordOut(eventBox)
     {
-        this.currentAB.drawOut(++this.outs);
-        if(this.outs==3)
-        {
-            this.currentAB.endInning();
-            this.endInning();
-        }
-        this.currentAB = this.findEventBox(this.currentAB.abNum + 1);
+        eventBox.drawOut(++this.outs);
     }
 
-    this.preEvent = preEvent;
-    function preEvent(eventString)
+    this.preAB = preAB;
+    function preAB(eventString)
     {
         //All Pre at-bat events
         switch(eventString.substring(0,2))
         {
             // Stolen Base
             case 'SB':
-                if(this.onFirst!=null)
+                switch(eventString.substring(2))
                 {
-                    this.onSecond = this.onFirst;
-                    this.onFirst = null;
-                    this.currentAB.toSecond(this.onSecond.number,'SB');
+                    // Steal Second
+                    case '12':
+                        if(this.onFirst!=null)
+                        {
+                            this.onSecond = this.onFirst;
+                            this.onFirst = null;
+                            this.currentAB.toSecond(this.onSecond.playerBox.player.number,'SB');
+                        }
+                        else
+                        {
+                            alert("Should Be Disabled: No runner on First");
+                        }
+                        break;
+                    // Steal Third
+                    case '23':
+                        if(this.onSecond!=null)
+                        {
+                            this.onThird = this.onSecond;
+                            this.onSecond = null;
+                            this.currentAB.toThird(this.onThird.playerBox.player.number,'SB');
+                        }
+                        else
+                        {
+                            alert("Should Be Disabled: No runner on Second");
+                        }
+                        break;
+                    // Steal Home
+                    case '3H':
+                        alert("Not Completed");
+                        break;
                 }
-                else if(this.onSecond!=null)
-                {
-                    this.onThird = this.onSecond;
-                    this.onSecond = null;
-                    this.currentAB.toThird(this.onThird.number,'SB');
-                }
-
                 break;
             // Caught Stealing
             case 'CS':
-                // TODO Base Specifiers
+                switch(eventString.substring(2))
+                {
+                    // Caught Stealing Second
+                    case '12':
+                        if(this.onFirst!=null)
+                        {
+                            this.currentAB.outToSecond(eventString);
+                            this.recordOut(this.onFirst);
+                            this.onSecond = null;
+                        }
+                        else
+                        {
+                            alert("Should Be Disabled: No runner on First");
+                        }
+                        break;
+                    // Caught Stealing Third
+                    case '23':
+                        if(this.onSecond!=null)
+                        {
+                            this.currentAB.outToThird(eventString);
+                            this.recordOut(this.onSecond);
+                            this.onSecond = null;
+                        }
+                        else
+                        {
+                            alert("Should Be Disabled: No runner on Second");
+                        }
+                        break;
+                    // Caught Stealing Home
+                    case '3H':
+                        alert("Not Completed");
+                        break;
+                }
                 break;
             // Pick Off
             case 'PO':
-                // TODO Base Specifiers
+                if(this.onFirst!=null)
+                {
+                    this.currentAB.pickOffFirst();
+                    this.onFirst = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
+                }
                 break;
             // Balk
             case 'BK':
@@ -214,15 +293,15 @@ function ScoreCard(canvas,overlay,batters)
         {
             // Single
             case 'S':
-                this.onFirst = this.currentAB.playerBox.player;
+                this.onFirst = this.currentAB;
                 break;
             // Double
             case 'D':
-                this.onSecond = this.currentAB.playerBox.player;
+                this.onSecond = this.currentAB;
                 break;
             // Triple
             case 'T':
-                this.onThird = this.currentAB.playerBox.player;
+                this.onThird = this.currentAB;
                 break;
             // Home Run
             case 'H':
@@ -234,11 +313,11 @@ function ScoreCard(canvas,overlay,batters)
                 break;
             // Intentional Walk
             case 'I':
-                // TODO Base Specifiers
+                this.onFirst = this.currentAB;
                 break;
             // Strikeout
             case 'K':
-                // TODO Base Specifiers
+                this.recordOut(this.currentAB);
                 break;
             // Fielder's choice
             case 'F':
@@ -246,14 +325,86 @@ function ScoreCard(canvas,overlay,batters)
                 break;
             // Hit By Pitch or B is for Beanball
             case 'B':
-                // TODO Base Specifiers
+                this.onFirst = this.currentAB;
                 break;
         }
         this.currentAB.hit(abString);
-        this.nextAB();
+        if(this.outs==3)
+        {
+            this.currentAB.endInning();
+            this.endInning();
+            this.nextAB();
+            this.startInning();
+        }
+        else
+        {
+            this.nextAB();
+        }
     }
+
+    this.postAB = postAB;
+    function postAB(abString)
+    {
+        // At Bat Events
+        switch(abString)
+        {
+            // Single
+            case 'S':
+                this.onFirst = this.currentAB;
+                break;
+            // Double
+            case 'D':
+                this.onSecond = this.currentAB;
+                break;
+            // Triple
+            case 'T':
+                this.onThird = this.currentAB;
+                break;
+            // Home Run
+            case 'H':
+                this.currentAB.runScored();
+                break;
+            // Walk
+            case 'W':
+                this.onFirst = this.currentAB;
+                break;
+            // Intentional Walk
+            case 'I':
+                this.onFirst = this.currentAB;
+                break;
+            // Strikeout
+            case 'K':
+                this.recordOut(this.currentAB);
+                break;
+            // Fielder's choice
+            case 'F':
+                // TODO Base Specifiers
+                break;
+            // Hit By Pitch or B is for Beanball
+            case 'B':
+                this.onFirst = this.currentAB;
+                break;
+            default :
+                alert(abString);
+                break;
+        }
+    }
+    // must come after the method definition because it is called in the constructor
+    this.startInning();
 }
 
+function LineScore(canvas)
+{
+
+}
+
+/**
+ *
+ * @param name
+ * @param number
+ * @param position
+ * @constructor
+ */
 function Player(name,number,position)
 {
     this.name = name;
@@ -261,6 +412,14 @@ function Player(name,number,position)
     this.position = position;
 }
 
+/**
+ *
+ * @param canvas - the canvas this player box is drawn on
+ * @param player - the player associated with this player box
+ * @param x - x-location
+ * @param y - y-location
+ * @constructor
+ */
 function PlayerBox(canvas,player,x,y)
 {
     var width = 120;
@@ -271,6 +430,10 @@ function PlayerBox(canvas,player,x,y)
     this.player = player;
     this.currentAB = false;
 
+    /**
+     * Function to draw this player box
+     * @type {Function}
+     */
     this.draw = draw;
     function draw()
     {
@@ -310,6 +473,15 @@ function PlayerBox(canvas,player,x,y)
 
 }
 
+/**
+ *
+ * @param canvas
+ * @param playerBox
+ * @param abNum
+ * @param x
+ * @param y
+ * @constructor
+ */
 function EventBox(canvas,playerBox,abNum,x,y)
 {
     var BOX_W_H = 50;
@@ -344,6 +516,13 @@ function EventBox(canvas,playerBox,abNum,x,y)
         BOX_W_H = 300;
     }
 
+    this.startInning = startInning;
+    function startInning(inning)
+    {
+        this.ctx.strokeRect(this.x+(BOX_W_H *.35),this.y,(BOX_W_H *.3),(BOX_W_H *.25));
+        this.ctx.fillText(inning,this.x+(BOX_W_H *.45),this.y+(BOX_W_H *.2));
+    }
+
     this.drawOut = drawOut;
     function drawOut(number)
     {
@@ -372,6 +551,34 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.fillText(number,this.x+(BOX_W_H *.8),this.y+(BOX_W_H *.5));
     }
 
+    this.pickOffFirst = pickOffFirst;
+    function pickOffFirst()
+    {
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.80),this.y+(BOX_W_H *.45));
+        this.ctx.lineTo(this.x+(BOX_W_H *.90),this.y+(BOX_W_H *.45));
+        this.ctx.stroke();
+    }
+
+    this.outToSecond = outToSecond;
+    function outToSecond(how)
+    {
+        //make line slightly bigger
+        this.ctx.lineWidth = 3;
+        //Path for line from home to 2nd.
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.75),this.y+(BOX_W_H *.5));
+        this.ctx.lineTo(this.x+(BOX_W_H *.625),this.y+(BOX_W_H *.375));
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.5625),this.y+(BOX_W_H *.4375));
+        this.ctx.lineTo(this.x+(BOX_W_H *.6875),this.y+(BOX_W_H *.3125));
+        this.ctx.stroke();
+        this.ctx.fillText(how,this.x+(BOX_W_H *.60),this.y+(BOX_W_H *.30));
+        //reset original lineWidth
+        this.ctx.lineWidth = 1;
+    }
+
     this.toSecond = toSecond;
     function toSecond(number,how)
     {
@@ -387,6 +594,25 @@ function EventBox(canvas,playerBox,abNum,x,y)
         //reset original lineWidth
         this.ctx.lineWidth = 1;
         this.onSecond(number);
+    }
+
+    this.outToThird = outToThird;
+    function outToThird(how)
+    {
+        //make line slightly bigger
+        this.ctx.lineWidth = 3;
+        //Path for line from home to 2nd.
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.5),this.y+(BOX_W_H *.25));
+        this.ctx.lineTo(this.x+(BOX_W_H *.375),this.y+(BOX_W_H *.375));
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.3125),this.y+(BOX_W_H *.3125));
+        this.ctx.lineTo(this.x+(BOX_W_H *.4375),this.y+(BOX_W_H *.4375));
+        this.ctx.stroke();
+        this.ctx.fillText(how,this.x+(BOX_W_H *.20),this.y+(BOX_W_H *.30));
+        //reset original lineWidth
+        this.ctx.lineWidth = 1;
     }
 
     this.toThird = toThird;
