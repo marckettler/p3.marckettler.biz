@@ -51,7 +51,7 @@ function ScoreCard(canvas,overlay,batters)
     for (var i = 0; i < this.eventBoxes.length; i++)
     {
 
-        this.playerBoxes[i] = new PlayerBox(this.canvas[0],new Player("Player "+(i+1),i+1,i+1),0,this.y);
+        this.playerBoxes[i] = new PlayerBox(this.canvas[0],new Player("Player "+(i+1),i+10,i+1),0,this.y);
         this.playerBoxes[i].draw();
         this.y += 50;
     }
@@ -180,6 +180,52 @@ function ScoreCard(canvas,overlay,batters)
         eventBox.drawOut(++this.outs);
     }
 
+    this.advanceAllOneRBI = advanceAllOneRBI;
+    function advanceAllOneRBI()
+    {
+        // Advance all runners 1 base no RBI if run scores
+        if(this.onThird!=null)
+        {
+            this.onThird.runScored();
+            this.currentAB.rbiThird();
+            this.onThird = null;
+        }
+        if(this.onSecond!=null)
+        {
+            this.onThird = this.onSecond;
+            this.onSecond = null;
+        }
+        if(this.onFirst!=null)
+        {
+            this.onSecond = this.onFirst;
+            this.onFirst = null;
+        }
+    }
+
+    this.advanceAllOneNoRBI = advanceAllOneNoRBI;
+    function advanceAllOneNoRBI(how)
+    {
+        // Advance all runners 1 base no RBI if run scores
+        if(this.onThird!=null)
+        {
+            this.onThird.runScored();
+            this.currentAB.noRBIThird();
+            this.onThird = null;
+        }
+        if(this.onSecond!=null)
+        {
+            this.currentAB.toThird(how);
+            this.onThird = this.onSecond;
+            this.onSecond = null;
+        }
+        if(this.onFirst!=null)
+        {
+            this.currentAB.toSecond(how);
+            this.onSecond = this.onFirst;
+            this.onFirst = null;
+        }
+    }
+
     this.preAB = preAB;
     function preAB(eventString)
     {
@@ -196,7 +242,7 @@ function ScoreCard(canvas,overlay,batters)
                         {
                             this.onSecond = this.onFirst;
                             this.onFirst = null;
-                            this.currentAB.toSecond(this.onSecond.playerBox.player.number,'SB');
+                            this.currentAB.toSecond('SB');
                         }
                         else
                         {
@@ -209,7 +255,7 @@ function ScoreCard(canvas,overlay,batters)
                         {
                             this.onThird = this.onSecond;
                             this.onSecond = null;
-                            this.currentAB.toThird(this.onThird.playerBox.player.number,'SB');
+                            this.currentAB.toThird('SB');
                         }
                         else
                         {
@@ -218,7 +264,22 @@ function ScoreCard(canvas,overlay,batters)
                         break;
                     // Steal Home
                     case '3H':
-                        alert("Not Completed");
+                        if(this.onThird!=null)
+                        {
+                            this.currentAB.toHome(eventString.substring(0,2));
+                            this.currentAB.noRBIThird()
+                            this.onThird.runScored();
+                            this.onThird = null;
+                        }
+                        else
+                        {
+                            alert("Should Be Disabled: No runner on Third");
+                        }
+                        break;
+                    // Double Steal
+                    case 'DS':
+                    case 'TS':
+                        this.advanceAllOneNoRBI(eventString);
                         break;
                 }
                 break;
@@ -232,7 +293,7 @@ function ScoreCard(canvas,overlay,batters)
                         {
                             this.currentAB.outToSecond(eventString);
                             this.recordOut(this.onFirst);
-                            this.onSecond = null;
+                            this.onFirst = null;
                         }
                         else
                         {
@@ -254,34 +315,74 @@ function ScoreCard(canvas,overlay,batters)
                         break;
                     // Caught Stealing Home
                     case '3H':
-                        alert("Not Completed");
+                        if(this.onThird!=null)
+                        {
+                            this.currentAB.outToHome(eventString.substring(0,2));
+                            this.recordOut(this.onThird);
+                            this.onThird = null;
+                        }
+                        else
+                        {
+                            alert("Should Be Disabled: No runner on Third");
+                        }
                         break;
                 }
                 break;
             // Pick Off
             case 'PO':
-                if(this.onFirst!=null)
+                switch(eventString.substring(2))
                 {
-                    this.currentAB.pickOffFirst();
-                    this.onFirst = null;
-                }
-                else
-                {
-                    alert("Should Be Disabled: No runner on First");
+                    case '1':
+                        if(this.onFirst!=null)
+                        {
+                            this.currentAB.pickOffFirst();
+                            this.recordOut(this.onFirst);
+                            this.onFirst = null;
+                        }
+                        else
+                        {
+                            alert("Should Be Disabled: No runner on First");
+                        }
+                        break;
+                    case '2':
+                        if(this.onSecond!=null)
+                        {
+                            this.currentAB.pickOffSecond();
+                            this.recordOut(this.onSecond);
+                            this.onSecond = null;
+                        }
+                        else
+                        {
+                            alert("Should Be Disabled: No runner on Second");
+                        }
+                        break;
+                    case '3':
+                        if(this.onThird!=null)
+                        {
+                            this.currentAB.pickOffThird();
+                            this.recordOut(this.onThird);
+                            this.onThird = null;
+                        }
+                        else
+                        {
+                            alert("Should Be Disabled: No runner on Third");
+                        }
+                        break;
                 }
                 break;
-            // Balk
-            case 'BK':
-                // TODO Base Specifiers
-                break;
-            // Passed Ball
+            // Balk, Wild Pitch, and Passed Ball
             case 'PB':
-                // TODO Base Specifiers
-                break;
-            // Wild Pitch
+            case 'BK':
             case 'WP':
-                // TODO Base Specifiers
+                this.advanceAllOneNoRBI(eventString);
                 break;
+        }
+
+        if(this.outs==3)
+        {
+            this.currentAB.endInning();
+            this.endInning();
+            this.startInning();
         }
     }
 
@@ -306,29 +407,31 @@ function ScoreCard(canvas,overlay,batters)
             // Home Run
             case 'H':
                 this.currentAB.runScored();
-
+                this.currentAB.rbiHome(this.currentAB.playerBox.player.number);
                 if(this.onFirst!=null)
                 {
                     this.onFirst.runScored();
+                    this.currentAB.rbiFirst();
                     this.onFirst = null;
                 }
                 if(this.onSecond!=null)
                 {
                     this.onSecond.runScored();
+                    this.currentAB.rbiSecond();
                     this.onSecond = null;
                 }
                 if(this.onThird!=null)
                 {
                     this.onThird.runScored();
+                    this.currentAB.rbiThird();
                     this.onThird = null;
                 }
                 break;
-            // Walk
+            // Walk, Intentional Walk, and HBP
             case 'W':
-                this.onFirst = this.currentAB;
-                break;
-            // Intentional Walk
             case 'I':
+            case 'B':
+                this.advanceAllOneRBI();
                 this.onFirst = this.currentAB;
                 break;
             // Strikeout
@@ -337,11 +440,7 @@ function ScoreCard(canvas,overlay,batters)
                 break;
             // Fielder's choice
             case 'F':
-                // TODO Base Specifiers
-                break;
-            // Hit By Pitch or B is for Beanball
-            case 'B':
-                this.onFirst = this.currentAB;
+
                 break;
         }
         this.currentAB.hit(abString);
@@ -366,46 +465,118 @@ function ScoreCard(canvas,overlay,batters)
         {
             // 1st to 2nd
             case '1-2':
-                this.onSecond = this.onFirst;
+                if(this.onFirst!=null)
+                {
+                    this.onSecond = this.onFirst;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
+                }
                 break;
             // PO 1st to 2nd
             case '1x2':
-                this.currentAB.outToSecond(abString);
+                if(this.onFirst!=null)
+                {
+                    this.currentAB.outToSecond(abString);
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
+                }
                 break;
             // 1st to 3rd
             case '1-3':
-                this.onThird = this.onFirst;
+                if(this.onFirst!=null)
+                {
+                    this.onThird = this.onFirst;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
+                }
                 break;
             // PO 1st to 3rd
             case '1x3':
-                alert(abString + " not complete");
+                if(this.onFirst!=null)
+                {
+                    alert(abString + " not complete");
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
+                }
                 break;
             case '1-H':
-                this.onFirst.runScored();
-                this.onFirst = null;
-                break;
+                if(this.onFirst!=null)
+                {
+                    this.onFirst.runScored();
+                    this.onFirst = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
+                }                break;
             case '1xH':
-                alert(abString + " not complete");
+                if(this.onFirst!=null)
+                {
+                    alert(abString + " not complete");
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
+                }
+
                 break;
             case '2-3':
-                this.onThird = this.onSecond;
+                if(this.onSecond!=null)
+                {
+                    this.onThird = this.onSecond;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Second");
+                }
                 break;
             case '2x3':
                 alert(abString + " not complete");
                 break;
             case '2-H':
-                this.onSecond.runScored();
-                this.onSecond = null;
+                if(this.onSecond!=null)
+                {
+                    this.onSecond.runScored();
+                    this.onSecond = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Second");
+                }
                 break;
             case '2xH':
                 alert(abString + " not complete");
                 break;
             case '3-H':
-                this.onThird.runScored();
-                this.onThird = null;
+                if(this.onThird!=null)
+                {
+                    this.onThird.runScored();
+                    this.onThird = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Third");
+                }
                 break;
             case '3xH':
-                alert(abString + " not complete");
+                if(this.onThird!=null)
+                {
+                    this.currentAB.outToHome();
+                    this.onThird.recordOut();
+                    this.onThird = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Third");
+                }
                 break;
         }
     }
@@ -415,6 +586,17 @@ function ScoreCard(canvas,overlay,batters)
 
 function LineScore(canvas)
 {
+
+}
+
+function ControlArea(scoreCard,divControlArea)
+{
+    var preAB = divControlArea[0].childNodes[1];
+    var AB = divControlArea[0].childNodes[3];
+    var postAB = divControlArea[0].childNodes[5]
+    console.log(preAB);
+    console.log(AB);
+    console.log(postAB);
 
 }
 
@@ -512,6 +694,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     this.playerBox = playerBox;
     this.abNum = abNum;
 
+    /**
+     * Function to draw this event box on the canvas
+     * @type {Function}
+     */
     this.draw = draw;
     function draw()
     {
@@ -530,12 +716,20 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.stroke();
     }
 
+    /**
+     * Used to enlarge this EventBox
+     * @type {Function}
+     */
     this.magnify = magnify;
     function magnify()
     {
         BOX_W_H = 300;
     }
 
+    /**
+     * Draw this EventBox as the start of a new inning
+     * @type {Function}
+     */
     this.startInning = startInning;
     function startInning(inning)
     {
@@ -543,7 +737,15 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.fillText(inning,this.x+(BOX_W_H *.45),this.y+(BOX_W_H *.2));
     }
 
+    /**
+     * Draw an out on this EventBox
+     * @type {Function}
+     */
     this.drawOut = drawOut;
+    /**
+     * The number of the out 1,2 or 3.
+     * @param number
+     */
     function drawOut(number)
     {
         var font = this.ctx.font;
@@ -552,11 +754,14 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.font = font;
     }
 
+    /**
+     * Draw the run scored dot on this EventBox
+     * @type {Function}
+     */
     this.runScored = runScored;
     function runScored()
     {
         var originalFill = this.ctx.fillStyle;
-        // draw mound - will be black if a run scored.
         this.ctx.beginPath();
         this.ctx.arc(this.x+(BOX_W_H/2), this.y+(BOX_W_H/2), BOX_W_H/12, 0, 2 * Math.PI, false);
         this.ctx.fillStyle = 'black';
@@ -568,16 +773,171 @@ function EventBox(canvas,playerBox,abNum,x,y)
     function onFirst(number)
     {
         // runner on first
-        this.ctx.fillText(number,this.x+(BOX_W_H *.8),this.y+(BOX_W_H *.5));
+        this.ctx.fillText(number,this.x+(BOX_W_H *.78),this.y+(BOX_W_H *.5));
+    }
+
+    this.onSecond = onSecond;
+    function onSecond(number)
+    {
+        this.ctx.fillText(number,this.x+(BOX_W_H *.42),this.y+(BOX_W_H *.17));
+    }
+
+    this.onThird = onThird;
+    function onThird(number)
+    {
+        this.ctx.fillText(number,this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.5));
+    }
+
+    this.rbiFirst = rbiFirst;
+    function rbiFirst()
+    {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x+(BOX_W_H *.86), this.y+(BOX_W_H *.44), BOX_W_H*.11, 0, 2 * Math.PI, false);
+        this.ctx.stroke();
+    }
+
+    this.rbiSecond = rbiSecond;
+    function rbiSecond()
+    {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x+(BOX_W_H *.51), this.y+(BOX_W_H *.12), BOX_W_H*.11, 0, 2 * Math.PI, false);
+        this.ctx.stroke();
+    }
+
+    this.rbiThird = rbiThird;
+    function rbiThird()
+    {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x+(BOX_W_H *.14), this.y+(BOX_W_H *.45), BOX_W_H*.11, 0, 2 * Math.PI, false);
+        this.ctx.stroke();
+    }
+
+    this.rbiHome = rbiHome;
+    function rbiHome(number)
+    {
+        this.ctx.fillText(number,this.x+(BOX_W_H *.42),this.y+(BOX_W_H *.90));
+        this.ctx.beginPath();
+        this.ctx.arc(this.x+(BOX_W_H *.51), this.y+(BOX_W_H *.83), BOX_W_H*.11, 0, 2 * Math.PI, false);
+        this.ctx.stroke();
+    }
+
+    this.noRBIFirst = noRBIFirst;
+    function noRBIFirst()
+    {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x+(BOX_W_H *.86), this.y+(BOX_W_H *.44), BOX_W_H*.11, 0, 2 * Math.PI, false);
+        this.ctx.strokeStyle = 'red';
+        this.ctx.stroke();
+        this.ctx.strokeStyle = 'black';
+    }
+
+    this.noRBISecond = noRBISecond;
+    function noRBISecond()
+    {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x+(BOX_W_H *.51), this.y+(BOX_W_H *.12), BOX_W_H*.11, 0, 2 * Math.PI, false);
+        this.ctx.strokeStyle = 'red';
+        this.ctx.stroke();
+        this.ctx.strokeStyle = 'black';
+    }
+
+    this.noRBIThird = noRBIThird;
+    function noRBIThird()
+    {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x+(BOX_W_H *.14), this.y+(BOX_W_H *.45), BOX_W_H*.11, 0, 2 * Math.PI, false);
+        this.ctx.strokeStyle = 'red';
+        this.ctx.stroke();
+        this.ctx.strokeStyle = 'black';
+    }
+
+    this.noRBIHome = noRBIHome;
+    function noRBIHome(number)
+    {
+        this.ctx.fillText(number,this.x+(BOX_W_H *.42),this.y+(BOX_W_H *.90));
+        this.ctx.beginPath();
+        this.ctx.arc(this.x+(BOX_W_H *.51), this.y+(BOX_W_H *.83), BOX_W_H*.11, 0, 2 * Math.PI, false);
+        this.ctx.strokeStyle = 'red';
+        this.ctx.stroke();
+        this.ctx.strokeStyle = 'black';
     }
 
     this.pickOffFirst = pickOffFirst;
     function pickOffFirst()
     {
+        this.ctx.strokeStyle = 'red';
         this.ctx.beginPath();
-        this.ctx.moveTo(this.x+(BOX_W_H *.80),this.y+(BOX_W_H *.45));
-        this.ctx.lineTo(this.x+(BOX_W_H *.90),this.y+(BOX_W_H *.45));
+        this.ctx.moveTo(this.x+(BOX_W_H *.78),this.y+(BOX_W_H *.45));
+        this.ctx.lineTo(this.x+(BOX_W_H *.96),this.y+(BOX_W_H *.45));
         this.ctx.stroke();
+        this.ctx.strokeStyle = 'black';
+    }
+
+    this.pickOffSecond = pickOffSecond;
+    function pickOffSecond()
+    {
+        this.ctx.strokeStyle = 'red';
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.44),this.y+(BOX_W_H *.13));
+        this.ctx.lineTo(this.x+(BOX_W_H *.59),this.y+(BOX_W_H *.13));
+        this.ctx.stroke();
+        this.ctx.strokeStyle = 'black';
+    }
+
+    this.pickOffThird = pickOffThird;
+    function pickOffThird()
+    {
+        this.ctx.strokeStyle = 'red';
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.45));
+        this.ctx.lineTo(this.x+(BOX_W_H *.19),this.y+(BOX_W_H *.45));
+        this.ctx.stroke();
+        this.ctx.strokeStyle = 'black';
+    }
+
+    this.toSecond = toSecond;
+    function toSecond(how)
+    {
+        //make line slightly bigger
+        this.ctx.lineWidth = 3;
+        //Path for line from home to 2nd.
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.75),this.y+(BOX_W_H *.5));
+        this.ctx.lineTo(this.x+(BOX_W_H *.5),this.y+(BOX_W_H *.25));
+        this.ctx.stroke();
+        this.ctx.fillText(how,this.x+(BOX_W_H *.60),this.y+(BOX_W_H *.30));
+        //reset original lineWidth
+        this.ctx.lineWidth = 1;
+    }
+
+    this.toThird = toThird;
+    function toThird(how)
+    {
+        //make line slightly bigger
+        this.ctx.lineWidth = 3;
+        //Path for line from home to 2nd.
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.5),this.y+(BOX_W_H *.25));
+        this.ctx.lineTo(this.x+(BOX_W_H *.25),this.y+(BOX_W_H *.5));
+        this.ctx.stroke();
+        this.ctx.fillText(how,this.x+(BOX_W_H *.20),this.y+(BOX_W_H *.30));
+        //reset original lineWidth
+        this.ctx.lineWidth = 1;
+    }
+
+    this.toHome = toHome;
+    function toHome(how)
+    {
+        //make line slightly bigger
+        this.ctx.lineWidth = 3;
+        //Path for line from home to 2nd.
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.25),this.y+(BOX_W_H *.5));
+        this.ctx.lineTo(this.x+(BOX_W_H *.5),this.y+(BOX_W_H *.75));
+        this.ctx.stroke();
+        this.ctx.fillText(how,this.x+(BOX_W_H *.15),this.y+(BOX_W_H *.75));
+        //reset original lineWidth
+        this.ctx.lineWidth = 1;
     }
 
     this.outToSecond = outToSecond;
@@ -599,23 +959,6 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.lineWidth = 1;
     }
 
-    this.toSecond = toSecond;
-    function toSecond(number,how)
-    {
-        this.draw();
-        //make line slightly bigger
-        this.ctx.lineWidth = 3;
-        //Path for line from home to 2nd.
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.x+(BOX_W_H *.75),this.y+(BOX_W_H *.5));
-        this.ctx.lineTo(this.x+(BOX_W_H *.5),this.y+(BOX_W_H *.25));
-        this.ctx.stroke();
-        this.ctx.fillText(how,this.x+(BOX_W_H *.60),this.y+(BOX_W_H *.30));
-        //reset original lineWidth
-        this.ctx.lineWidth = 1;
-        this.onSecond(number);
-    }
-
     this.outToThird = outToThird;
     function outToThird(how)
     {
@@ -635,33 +978,23 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.lineWidth = 1;
     }
 
-    this.toThird = toThird;
-    function toThird(number,how)
+    this.outToHome = outToHome;
+    function outToHome(how)
     {
-        this.draw();
         //make line slightly bigger
         this.ctx.lineWidth = 3;
         //Path for line from home to 2nd.
         this.ctx.beginPath();
-        this.ctx.moveTo(this.x+(BOX_W_H *.5),this.y+(BOX_W_H *.25));
-        this.ctx.lineTo(this.x+(BOX_W_H *.25),this.y+(BOX_W_H *.5));
+        this.ctx.moveTo(this.x+(BOX_W_H *.25),this.y+(BOX_W_H *.5));
+        this.ctx.lineTo(this.x+(BOX_W_H *.375),this.y+(BOX_W_H *.625));
         this.ctx.stroke();
-        this.ctx.fillText(how,this.x+(BOX_W_H *.20),this.y+(BOX_W_H *.30));
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x+(BOX_W_H *.3125),this.y+(BOX_W_H *.6875));
+        this.ctx.lineTo(this.x+(BOX_W_H *.4375),this.y+(BOX_W_H *.5625));
+        this.ctx.stroke();
+        this.ctx.fillText(how,this.x+(BOX_W_H *.15),this.y+(BOX_W_H *.75));
         //reset original lineWidth
         this.ctx.lineWidth = 1;
-        this.onThird(number);
-    }
-
-    this.onSecond = onSecond;
-    function onSecond(number)
-    {
-        this.ctx.fillText(number,this.x+(BOX_W_H *.45),this.y+(BOX_W_H *.17));
-    }
-
-    this.onThird = onThird;
-    function onThird(number)
-    {
-        this.ctx.fillText(number,this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.5));
     }
 
     this.endInning = endInning;
