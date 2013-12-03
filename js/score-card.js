@@ -28,6 +28,7 @@ function ScoreCard(canvas,overlay,batters)
     this.abNum = 1;
     this.inning = 1;
     this.outs = 0;
+    this.onDeck = null;
     this.currentAB = null;
     this.onFirst = null;
     this.onSecond = null;
@@ -73,7 +74,6 @@ function ScoreCard(canvas,overlay,batters)
     this.currentAB = this.eventBoxes[0][0];
     this.currentAB.playerBox.currentAB = true;
     this.currentAB.playerBox.draw();
-    // end constructor
 
     /**
      *
@@ -95,8 +95,11 @@ function ScoreCard(canvas,overlay,batters)
             }
         }
     }
+    //part of constructor
+    this.onDeck = this.findEventBox(this.currentAB.abNum+1);
 
     /**
+     *
      *
      * @param canvas
      * @param x
@@ -154,7 +157,8 @@ function ScoreCard(canvas,overlay,batters)
     {
         this.currentAB.playerBox.currentAB = false;
         this.currentAB.playerBox.draw();
-        this.currentAB = this.findEventBox(this.currentAB.abNum + 1);
+        this.currentAB = this.onDeck;
+        this.onDeck = this.findEventBox(this.currentAB.abNum + 1);
         this.currentAB.playerBox.currentAB = true;
         this.currentAB.playerBox.draw();
 
@@ -183,7 +187,7 @@ function ScoreCard(canvas,overlay,batters)
     this.advanceAllOneRBI = advanceAllOneRBI;
     function advanceAllOneRBI()
     {
-        // Advance all runners 1 base no RBI if run scores
+        // Advance all runners 1 base RBI if run scores
         if(this.onThird!=null)
         {
             this.onThird.runScored();
@@ -222,6 +226,78 @@ function ScoreCard(canvas,overlay,batters)
         {
             this.currentAB.toSecond(how);
             this.onSecond = this.onFirst;
+            this.onFirst = null;
+        }
+    }
+
+    this.advanceAllTwoRBI = advanceAllTwoRBI;
+    function advanceAllTwoRBI()
+    {
+        // Advance all runners 1 base no RBI if run scores
+        if(this.onThird!=null)
+        {
+            this.onThird.runScored();
+            this.currentAB.rbiThird();
+            this.onThird = null;
+        }
+        if(this.onSecond!=null)
+        {
+            this.onSecond.runScored();
+            this.currentAB.rbiSecond();
+            this.onSecond = null;
+        }
+        if(this.onFirst!=null)
+        {
+            this.onThird = this.onFirst;
+            this.onFirst = null;
+        }
+    }
+
+    this.advanceAllThreeRBI = advanceAllThreeRBI;
+    function advanceAllThreeRBI()
+    {
+        // Advance all runners 1 base no RBI if run scores
+        if(this.onThird!=null)
+        {
+            this.onThird.runScored();
+            this.currentAB.rbiThird();
+            this.onThird = null;
+        }
+        if(this.onSecond!=null)
+        {
+            this.onSecond.runScored();
+            this.currentAB.rbiSecond();
+            this.onSecond = null;
+        }
+        if(this.onFirst!=null)
+        {
+            this.onFirst.runScored();
+            this.currentAB.rbiFirst();
+            this.onFirst = null;
+        }
+    }
+
+    this.advanceAllTwoNoRBI = advanceAllTwoNoRBI;
+    function advanceAllTwoNoRBI(how)
+    {
+        // Advance all runners 1 base no RBI if run scores
+        if(this.onThird!=null)
+        {
+            this.onThird.runScored();
+            this.currentAB.noRBIThird();
+            this.onThird = null;
+        }
+        if(this.onSecond!=null)
+        {
+            this.onSecond.runScored();
+            this.currentAB.noRBISecond();
+            this.onSecond = null;
+        }
+        if(this.onFirst!=null)
+        {
+            this.currentAB.toSecond(how);
+            this.currentAB.toThird(how);
+            this.onThird = this.onFirst;
             this.onFirst = null;
         }
     }
@@ -394,14 +470,27 @@ function ScoreCard(canvas,overlay,batters)
         {
             // Single
             case 'S':
+                if(this.onFirst!=null)
+                {
+                    this.advanceAllOneRBI();
+                }
                 this.onFirst = this.currentAB;
                 break;
             // Double
             case 'D':
+                if(this.onFirst!=null)
+                {
+                    this.advanceAllTwoRBI();
+                }
+                else if(this.onSecond!=null)
+                {
+                    this.advanceAllOneRBI();
+                }
                 this.onSecond = this.currentAB;
                 break;
             // Triple
             case 'T':
+                this.advanceAllThreeRBI();
                 this.onThird = this.currentAB;
                 break;
             // Home Run
@@ -444,6 +533,14 @@ function ScoreCard(canvas,overlay,batters)
                 break;
         }
         this.currentAB.hit(abString);
+        // show hit results in next AB
+        if(this.onFirst!=null)
+            this.onDeck.onFirst(this.onFirst.playerBox.player.number);
+        if(this.onSecond!=null)
+            this.onDeck.onSecond(this.onSecond.playerBox.player.number);
+        if(this.onThird!=null)
+            this.onDeck.onThird(this.onThird.playerBox.player.number);
+
         if(this.outs==3)
         {
             this.currentAB.endInning();
@@ -451,10 +548,22 @@ function ScoreCard(canvas,overlay,batters)
             this.nextAB();
             this.startInning();
         }
-        else
-        {
-            this.nextAB();
-        }
+console.log("End of processAB");
+if(this.onFirst!=null)
+{
+    console.log("onFirst");
+    console.log(this.onFirst.playerBox.player);
+}
+if(this.onSecond!=null)
+{
+    console.log("onSecond");
+    console.log(this.onSecond.playerBox.player);
+}
+if(this.onThird!=null)
+{
+    console.log("onThird");
+    console.log(this.onThird.playerBox.player);
+}
     }
 
     this.postAB = postAB;
@@ -467,7 +576,11 @@ function ScoreCard(canvas,overlay,batters)
             case '1-2':
                 if(this.onFirst!=null)
                 {
+                    this.onFirst.hit(abString);
                     this.onSecond = this.onFirst;
+                    this.onFirst = null;
+                    this.onDeck.onFirst("");
+                    this.onDeck.onSecond(this.onSecond.playerBox.player.number);
                 }
                 else
                 {
@@ -478,7 +591,7 @@ function ScoreCard(canvas,overlay,batters)
             case '1x2':
                 if(this.onFirst!=null)
                 {
-                    this.currentAB.outToSecond(abString);
+                    this.onDeck.outToSecond(abString);
                 }
                 else
                 {
@@ -511,6 +624,7 @@ function ScoreCard(canvas,overlay,batters)
                 if(this.onFirst!=null)
                 {
                     this.onFirst.runScored();
+                    this.currentAB.rbiFirst();
                     this.onFirst = null;
                 }
                 else
@@ -532,6 +646,9 @@ function ScoreCard(canvas,overlay,batters)
                 if(this.onSecond!=null)
                 {
                     this.onThird = this.onSecond;
+                    this.onDeck.onSecond("");
+                    this.onDeck.onThird(this.onThird.playerBox.player.number);
+                    this.onSecond = null;
                 }
                 else
                 {
@@ -545,6 +662,7 @@ function ScoreCard(canvas,overlay,batters)
                 if(this.onSecond!=null)
                 {
                     this.onSecond.runScored();
+                    this.onDeck.rbiSecond();
                     this.onSecond = null;
                 }
                 else
@@ -553,13 +671,24 @@ function ScoreCard(canvas,overlay,batters)
                 }
                 break;
             case '2xH':
-                alert(abString + " not complete");
+                if(this.onSecond!=null)
+                {
+                    this.onDeck.toThird(abString);
+                    this.onDeck.outToHome(abString);
+                    this.onSecond = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Second");
+                }
                 break;
             case '3-H':
                 if(this.onThird!=null)
                 {
                     this.onThird.runScored();
+                    this.currentAB.rbiThird();
                     this.onThird = null;
+                    this.onDeck.onThird('');
                 }
                 else
                 {
@@ -569,7 +698,7 @@ function ScoreCard(canvas,overlay,batters)
             case '3xH':
                 if(this.onThird!=null)
                 {
-                    this.currentAB.outToHome();
+                    this.onDeck.outToHome();
                     this.onThird.recordOut();
                     this.onThird = null;
                 }
@@ -579,6 +708,29 @@ function ScoreCard(canvas,overlay,batters)
                 }
                 break;
         }
+        if(this.outs==3)
+        {
+            this.currentAB.endInning();
+            this.endInning();
+            this.nextAB();
+            this.startInning();
+        }
+console.log("End of postAB");
+if(this.onFirst!=null)
+{
+console.log("onFirst");
+console.log(this.onFirst.playerBox.player);
+}
+if(this.onSecond!=null)
+{
+console.log("onSecond");
+console.log(this.onSecond.playerBox.player);
+}
+if(this.onThird!=null)
+{
+console.log("onThird");
+console.log(this.onThird.playerBox.player);
+}
     }
     // must come after the method definition because it is called in the constructor
     this.startInning();
@@ -591,12 +743,6 @@ function LineScore(canvas)
 
 function ControlArea(scoreCard,divControlArea)
 {
-    var preAB = divControlArea[0].childNodes[1];
-    var AB = divControlArea[0].childNodes[3];
-    var postAB = divControlArea[0].childNodes[5]
-    console.log(preAB);
-    console.log(AB);
-    console.log(postAB);
 
 }
 
@@ -693,6 +839,7 @@ function EventBox(canvas,playerBox,abNum,x,y)
     this.ctx = canvas.getContext('2d');
     this.playerBox = playerBox;
     this.abNum = abNum;
+    this.hitString = "";
 
     /**
      * Function to draw this event box on the canvas
@@ -772,19 +919,27 @@ function EventBox(canvas,playerBox,abNum,x,y)
     this.onFirst = onFirst;
     function onFirst(number)
     {
-        // runner on first
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(this.x+(BOX_W_H *.78),this.y+(BOX_W_H *.25),BOX_W_H *.18,BOX_W_H *.50);
+        this.ctx.fillStyle = 'black';
         this.ctx.fillText(number,this.x+(BOX_W_H *.78),this.y+(BOX_W_H *.5));
     }
 
     this.onSecond = onSecond;
     function onSecond(number)
     {
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(this.x+(BOX_W_H *.25),this.y+3,BOX_W_H *.50,BOX_W_H *.18);
+        this.ctx.fillStyle = 'black';
         this.ctx.fillText(number,this.x+(BOX_W_H *.42),this.y+(BOX_W_H *.17));
     }
 
     this.onThird = onThird;
     function onThird(number)
     {
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(this.x+(BOX_W_H *.03),this.y+(BOX_W_H *.25),BOX_W_H *.18,BOX_W_H *.50);
+        this.ctx.fillStyle = 'black';
         this.ctx.fillText(number,this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.5));
     }
 
@@ -1024,7 +1179,8 @@ function EventBox(canvas,playerBox,abNum,x,y)
     this.hit= hit;
     function hit(type)
     {
-        this.ctx.fillText(type,this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.90));
+        this.hitString += type;
+        this.ctx.fillText(this.hitString,this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.90));
     }
 
     this.hitRight = hitRight;

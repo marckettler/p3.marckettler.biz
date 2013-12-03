@@ -12,6 +12,26 @@
         var controlArea;
         function pageLoad()
         {
+            $( "#advance-runner-dialog-form" ).dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Next AB": function() {
+                        $( this ).dialog( "close" );
+                    }
+                },
+                close: function() {
+                    scoreCard.nextAB();
+                }
+            });
+
+            $( ".advance-runners" )
+                    .button()
+                    .click(function(id) {
+                        $( "#advance-runner-dialog-form" ).dialog( "open" );
+                    });
             $( "#accordion" ).accordion({
                 collapsible: true,
                 heightStyle: "content"
@@ -22,35 +42,38 @@
     </script>
 </head>
 <body onload="pageLoad()">
-    <div class="container">
-        <canvas class="bg" id="bg"></canvas>
-        <canvas class="fg" id="fg"></canvas>
-    </div>
-    <div class="controlArea" id="controlArea">
-        <div id="accordion">
-            <h3>Pre AB Events</h3>
-            <div>
-                <button type="button" onclick="scoreCard.preAB('SB12')">Steal 2nd</button>
-                <button type="button" onclick="scoreCard.preAB('SB23')">Steal 3rd</button>
-                <button type="button" onclick="scoreCard.preAB('SB3H')">Steal Home</button>
-                <button type="button" onclick="scoreCard.preAB('CS12')">CS 2nd</button>
-                <button type="button" onclick="scoreCard.preAB('CS23')">CS 3rd</button>
-                <button type="button" onclick="scoreCard.preAB('CS3H')">CS Home</button>
-                <button type="button" onclick="scoreCard.preAB('PO1')">PO 1st</button>
-                <button type="button" onclick="scoreCard.preAB('PO2')">PO 2nd</button>
-                <button type="button" onclick="scoreCard.preAB('PO3')">PO 3rd</button>
-                <button type="button" onclick="scoreCard.preAB('BK')">Balk</button>
+    <div>
+        <div class="container">
+            <canvas class="bg" id="bg"></canvas>
+            <canvas class="fg" id="fg"></canvas>
+        </div>
+        <div class="controlArea" id="controlArea">
+            <div id="accordion">
+                <h3>AB Events</h3>
+                <div>
+                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('S')">Single</button>
+                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('D')">Double</button>
+                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('T')">Triple</button>
+                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('H')">Home Run!</button>
+                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('W')">Walk</button>
+                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('K')">Out</button>
+                </div>
+                <h3>Base Running Events</h3>
+                <div>
+                    <button type="button" onclick="scoreCard.preAB('SB12')">Steal 2nd</button>
+                    <button type="button" onclick="scoreCard.preAB('SB23')">Steal 3rd</button>
+                    <button type="button" onclick="scoreCard.preAB('SB3H')">Steal Home</button>
+                    <button type="button" onclick="scoreCard.preAB('CS12')">CS 2nd</button>
+                    <button type="button" onclick="scoreCard.preAB('CS23')">CS 3rd</button>
+                    <button type="button" onclick="scoreCard.preAB('CS3H')">CS Home</button>
+                    <button type="button" onclick="scoreCard.preAB('PO1')">PO 1st</button>
+                    <button type="button" onclick="scoreCard.preAB('PO2')">PO 2nd</button>
+                    <button type="button" onclick="scoreCard.preAB('PO3')">PO 3rd</button>
+                    <button type="button" onclick="scoreCard.preAB('BK')">Balk</button>
+                </div>
             </div>
-            <h3>AB Events</h3>
-            <div>
-                <button type="button" onclick="scoreCard.processAB('S')">Single</button>
-                <button type="button" onclick="scoreCard.processAB('D')">Double</button>
-                <button type="button" onclick="scoreCard.processAB('T')">Triple</button>
-                <button type="button" onclick="scoreCard.processAB('H')">Home Run!</button>
-                <button type="button" onclick="scoreCard.processAB('W')">Walk</button>
-                <button type="button" onclick="scoreCard.processAB('K')">Out</button>
-            </div>
-            <h3>Post AB Events</h3>
+        </div>
+        <div id="advance-runner-dialog-form" title="Advance Runners">
             <div>
                 <button type="button" onclick="scoreCard.postAB('1-2')">1-2</button>
                 <button type="button" onclick="scoreCard.postAB('1x2')">1x2</button>
@@ -67,6 +90,6 @@
             </div>
         </div>
     </div>
-
 </body>
+<div id="debug" style="background-color: #ffff00;position: absolute;bottom:0px">Test</div>
 </html>
