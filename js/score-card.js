@@ -321,6 +321,13 @@ function ScoreCard(canvas,overlay,batters)
         return(this.onFirst!=null&&this.onSecond!=null&&this.onThird!=null);
     }
 
+    this.flyOut = flyOut;
+    function flyOut(to)
+    {
+        this.recordOut(this.currentAB);
+        this.currentAB.hit(to);
+    }
+
     this.preAB = preAB;
     function preAB(eventString)
     {
@@ -682,8 +689,29 @@ function LineScore(canvas)
 
 }
 
-function ControlArea(scoreCard,divControlArea)
+function ControlArea(scoreCard)
 {
+    var foDialog = $( "#fly-out-dialog" ).dialog({
+        autoOpen: false,
+        height: 300,
+        width: 350,
+        modal: true
+    });
+
+    var goDialog = $( "#ground-out-dialog" ).dialog({
+        autoOpen: false,
+        height: 300,
+        width: 350,
+        modal: true
+    });
+
+    var poDialog = $( "#pop-out-dialog" ).dialog({
+        autoOpen: false,
+        height: 300,
+        width: 350,
+        modal: true
+    });
+
     var dpDialog = $( "#double-play-dialog" ).dialog({
         autoOpen: false,
         height: 300,
@@ -870,6 +898,42 @@ function ControlArea(scoreCard,divControlArea)
         .button()
         .click(function() {
             $( "#triple-play-dialog" ).dialog( "open" );
+        });
+    $( ".fly-out")
+        .button()
+        .click(function() {
+            $( "#fly-out-dialog" ).dialog( "open" );
+        });
+    $( ".fo")
+        .button()
+        .click(function() {
+            scoreCard.flyOut(this.id);
+            scoreCard.nextAB();
+            foDialog.dialog("close");
+        });
+    $( ".ground-out")
+        .button()
+        .click(function() {
+            $( "#ground-out-dialog" ).dialog( "open" );
+        });
+    $( ".go")
+        .button()
+        .click(function() {
+            scoreCard.flyOut(this.id);
+            scoreCard.nextAB();
+            goDialog.dialog("close");
+        });
+    $( ".pop-out")
+        .button()
+        .click(function() {
+            $( "#pop-out-dialog" ).dialog( "open" );
+        });
+    $( ".po")
+        .button()
+        .click(function() {
+            scoreCard.flyOut(this.id);
+            scoreCard.nextAB();
+            poDialog.dialog("close");
         });
     $( ".advance-runners" )
         .button()
