@@ -712,6 +712,13 @@ function ControlArea(scoreCard)
         modal: true
     });
 
+    var fcDialog = $( "#fielders-choice-out-dialog" ).dialog({
+        autoOpen: false,
+        height: 300,
+        width: 350,
+        modal: true
+    });
+
     var dpDialog = $( "#double-play-dialog" ).dialog({
         autoOpen: false,
         height: 300,
@@ -917,6 +924,18 @@ function ControlArea(scoreCard)
             $( "#ground-out-dialog" ).dialog( "open" );
         });
     $( ".go")
+        .button()
+        .click(function() {
+            scoreCard.flyOut(this.id);
+            scoreCard.nextAB();
+            goDialog.dialog("close");
+        });
+    $( ".fielders-choice-out")
+        .button()
+        .click(function() {
+            $( "#ground-out-dialog" ).dialog( "open" );
+        });
+    $( ".fco")
         .button()
         .click(function() {
             scoreCard.flyOut(this.id);

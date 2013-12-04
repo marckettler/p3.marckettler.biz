@@ -40,7 +40,7 @@
                     <button type="button" class="fly-out">Fly Ball</button>
                     <button type="button" class="ground-out">Ground Ball</button>
                     <button type="button" class="pop-out">Pop Up</button>
-                    <button type="button" onclick="scoreCard.processAB('F')">Fielder's Choice</button>
+                    <button type="button" class="fielders-choice-out">Fielder's Choice</button>
                     <button type="button" class="next-ab" onclick="scoreCard.processAB('K')">Strikeout</button>
                     <button type="button" class="double-play">Double Play</button>
                     <button type="button" class="triple-play">Triple Play</button>
@@ -124,7 +124,13 @@
                 <button type="button" class="po" id="6">Shortstop</button>
             </div>
         </div>
+        <div id="fielders-choice-out-dialog" title="Out at">
+            <div>
+                <button type="button" class="fco">2nd</button>
+                <button type="button" class="fco">3rd</button>
+                <button type="button" class="fco">Home</button>
+            </div>
+        </div>
     </div>
 </body>
-<div id="debug" style="background-color: #ffff00;position: absolute;bottom:0px">Test</div>
 </html>
