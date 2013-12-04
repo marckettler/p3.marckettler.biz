@@ -37,6 +37,8 @@
                 </div>
                 <h3>Outs</h3>
                 <div>
+                    <button type="button" class="fly-out">Fly Ball</button>
+                    <button type="button" class="ground-out">Fly Ball</button>
                     <button type="button" onclick="scoreCard.processAB('F')">Fielder's Choice</button>
                     <button type="button" class="next-ab" onclick="scoreCard.processAB('K')">Strikeout</button>
                     <button type="button" class="double-play">Double Play</button>
@@ -46,18 +48,18 @@
                 </div>
                 <h3>Base Running Events</h3>
                 <div>
-                    <button type="button" onclick="scoreCard.preAB('SB12')">Steal 2nd</button>
-                    <button type="button" onclick="scoreCard.preAB('SB23')">Steal 3rd</button>
-                    <button type="button" onclick="scoreCard.preAB('SB3H')">Steal Home</button>
-                    <button type="button" onclick="scoreCard.preAB('SBDS')">Double Steal</button>
-                    <button type="button" onclick="scoreCard.preAB('SBTS')">Triple Steal</button>
-                    <button type="button" onclick="scoreCard.preAB('CS12')">CS 2nd</button>
-                    <button type="button" onclick="scoreCard.preAB('CS23')">CS 3rd</button>
-                    <button type="button" onclick="scoreCard.preAB('CS3H')">CS Home</button>
-                    <button type="button" onclick="scoreCard.preAB('PO1')">PO 1st</button>
-                    <button type="button" onclick="scoreCard.preAB('PO2')">PO 2nd</button>
-                    <button type="button" onclick="scoreCard.preAB('PO3')">PO 3rd</button>
-                    <button type="button" onclick="scoreCard.preAB('BK')">Balk</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('SB12')">Steal 2nd</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('SB23')">Steal 3rd</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('SB3H')">Steal Home</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('SBDS')">Double Steal</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('SBTS')">Triple Steal</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('CS12')">CS 2nd</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('CS23')">CS 3rd</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('CS3H')">CS Home</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('PO1')">PO 1st</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('PO2')">PO 2nd</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('PO3')">PO 3rd</button>
+                    <button type="button" class="on-base" onclick="scoreCard.preAB('BK')">Balk</button>
                 </div>
             </div>
         </div>
@@ -85,6 +87,13 @@
                 <button type="button" id="21">2nd & 3rd</button>
                 <button type="button" id="31">2nd & Home</button>
                 <button type="button" id="32">3rd & Home</button>
+            </div>
+        </div>
+        <div id="triple-play-dialog" title="Outs At">
+            <div>
+                <button type="button" id="123">1st & 2nd & 3rd</button>
+                <button type="button" id="12H">1st & 2nd & Home</button>
+                <button type="button" id="23H">2nd & 3rd & Home</button>
             </div>
         </div>
     </div>

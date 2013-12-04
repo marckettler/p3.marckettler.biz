@@ -299,6 +299,28 @@ function ScoreCard(canvas,overlay,batters)
         }
     }
 
+    this.showRunners = showRunners;
+    function showRunners(eventBox)
+    {
+        if(this.onFirst!=null)
+            eventBox.onFirst(this.onFirst.playerBox.player.number);
+        if(this.onSecond!=null)
+            eventBox.onSecond(this.onSecond.playerBox.player.number);
+        if(this.onThird!=null)
+            eventBox.onThird(this.onThird.playerBox.player.number);
+    }
+
+    this.onCorners = onCorners;
+    function onCorners()
+    {
+        return(this.onFirst!=null&&this.onSecond==null&&this.onThird!=null);
+    }
+    this.areBasesLoaded = areBasesLoaded;
+    function areBasesLoaded()
+    {
+        return(this.onFirst!=null&&this.onSecond!=null&&this.onThird!=null);
+    }
+
     this.preAB = preAB;
     function preAB(eventString)
     {
@@ -473,7 +495,13 @@ function ScoreCard(canvas,overlay,batters)
             case 'W':
             case 'I':
             case 'B':
-                if(this.onFirst!=null)
+                //force only runner on first
+                if(this.onCorners())
+                {
+                    this.onSecond = this.onFirst;
+                    this.onFirst = null;
+                }//force runners
+                else if(this.onFirst!=null)
                 {
                     this.advanceAllOneRBI();
                 }
@@ -497,12 +525,7 @@ function ScoreCard(canvas,overlay,batters)
         // show hit results in next AB
         if(this.outs!=3)
         {
-            if(this.onFirst!=null)
-                this.onDeck.onFirst(this.onFirst.playerBox.player.number);
-            if(this.onSecond!=null)
-                this.onDeck.onSecond(this.onSecond.playerBox.player.number);
-            if(this.onThird!=null)
-                this.onDeck.onThird(this.onThird.playerBox.player.number);
+          this.showRunners(this.onDeck);
         }
     }// end processAB
 
@@ -661,21 +684,19 @@ function LineScore(canvas)
 
 function ControlArea(scoreCard,divControlArea)
 {
-    $( "#double-play-dialog" ).dialog({
+    var dpDialog = $( "#double-play-dialog" ).dialog({
         autoOpen: false,
         height: 300,
         width: 350,
-        modal: true,
-        buttons: {
-            "Next AB": function() {
-                $( this ).dialog( "close" );
-            }
-        },
-        close: function() {
-            scoreCard.nextAB();
-        }
+        modal: true
     });
 
+    var tpDialog = $( "#triple-play-dialog" ).dialog({
+        autoOpen: false,
+        height: 300,
+        width: 350,
+        modal: true
+    });
     $( "#advance-runner-dialog-form" ).dialog({
         autoOpen: false,
         height: 300,
@@ -683,11 +704,12 @@ function ControlArea(scoreCard,divControlArea)
         modal: true,
         buttons: {
             "Next AB": function() {
+                scoreCard.nextAB();
                 $( this ).dialog( "close" );
             }
         },
         close: function() {
-            scoreCard.nextAB();
+
         }
     });
 
@@ -699,30 +721,159 @@ function ControlArea(scoreCard,divControlArea)
             scoreCard.onFirst = null;
             scoreCard.recordOut(scoreCard.currentAB);
             scoreCard.currentAB.hit('DP');
-            scoreCard.advanceAllOneNoRBI('DP');
+            if(scoreCard.outs!=3)
+            {
+                scoreCard.advanceAllOneNoRBI('');
+            }
+            scoreCard.nextAB();
+            scoreCard.showRunners(scoreCard.currentAB);
+            dpDialog.dialog("close");
         });
     $( "#2H")
         .button()
         .click(function(){
             scoreCard.recordOut(scoreCard.onSecond);
             scoreCard.currentAB.outToThird('DP');
-            scoreCard.onFirst = null;
+            scoreCard.onSecond = null;
             scoreCard.recordOut(scoreCard.currentAB);
             scoreCard.currentAB.hit('DP');
+            if(scoreCard.outs!=3)
+            {
+                scoreCard.advanceAllOneNoRBI('');
+            }
+            scoreCard.nextAB();
+            scoreCard.showRunners(scoreCard.currentAB);
+            dpDialog.dialog("close");
+        });
+    $( "#3H")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onSecond);
+            scoreCard.currentAB.outToHome('DP');
+            scoreCard.onThird = null;
+            scoreCard.recordOut(scoreCard.currentAB);
+            scoreCard.currentAB.hit('DP');
+            if(scoreCard.outs!=3)
+            {
+                scoreCard.advanceAllOneNoRBI('');
+            }
+            scoreCard.nextAB();
+            scoreCard.showRunners(scoreCard.currentAB);
+            dpDialog.dialog("close");
+        });
+    $( "#21")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onFirst);
+            scoreCard.currentAB.outToSecond('DP');
+            scoreCard.onFirst = null;
+            scoreCard.recordOut(scoreCard.onSecond);
+            scoreCard.currentAB.outToThird('DP');
+            scoreCard.onSecond = null;
+            scoreCard.currentAB.hit('DP');
+            if(scoreCard.outs!=3)
+            {
+                scoreCard.advanceAllOneNoRBI('');
+            }
+            scoreCard.onFirst = scoreCard.currentAB;
+            scoreCard.nextAB();
+            scoreCard.showRunners(scoreCard.currentAB);
+            dpDialog.dialog("close");
+        });
+    $( "#31")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onFirst);
+            scoreCard.currentAB.outToSecond('DP');
+            scoreCard.onFirst = null;
+            scoreCard.recordOut(scoreCard.onThird);
+            scoreCard.currentAB.outToHome('DP');
+            scoreCard.onThird = null;
+            scoreCard.currentAB.hit('DP');
+            if(scoreCard.outs!=3)
+            {
+                scoreCard.advanceAllOneNoRBI('');
+            }
+            scoreCard.onFirst = scoreCard.currentAB;
+            scoreCard.nextAB();
+            scoreCard.showRunners(scoreCard.currentAB);
+            dpDialog.dialog("close");
+        });
+    $( "#32")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onSecond);
+            scoreCard.currentAB.outToThird('DP');
+            scoreCard.onSecond = null;
+            scoreCard.recordOut(scoreCard.onThird);
+            scoreCard.currentAB.outToHome('DP');
+            scoreCard.onThird = null;
+            scoreCard.currentAB.hit('DP');
+            if(scoreCard.outs!=3)
+            {
+                scoreCard.advanceAllOneNoRBI('');
+            }
+            scoreCard.onFirst = scoreCard.currentAB;
+            scoreCard.nextAB();
+            scoreCard.showRunners(scoreCard.currentAB);
+            dpDialog.dialog("close");
+        });
+    $( "#123")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onFirst);
+            scoreCard.currentAB.outToSecond('');
+            scoreCard.recordOut(scoreCard.onSecond);
+            scoreCard.currentAB.outToThird('');
+            scoreCard.recordOut(scoreCard.currentAB);
+            scoreCard.currentAB.hit('TP');
+            scoreCard.nextAB();
+            tpDialog.dialog("close");
+        });
+    $( "#12H")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onFirst);
+            scoreCard.currentAB.outToSecond('');
+            scoreCard.recordOut(scoreCard.onThird);
+            scoreCard.currentAB.outToHome('');
+            scoreCard.recordOut(scoreCard.currentAB);
+            scoreCard.currentAB.hit('TP');
+            scoreCard.nextAB();
+            tpDialog.dialog("close");
+        });
+    $( "#23H")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onFirst);
+            scoreCard.currentAB.outToSecond('');
+            scoreCard.recordOut(scoreCard.onSecond);
+            scoreCard.currentAB.outToThird('');
+            scoreCard.recordOut(scoreCard.onThird);
+            scoreCard.currentAB.outToHome('');
+            scoreCard.currentAB.hit('TP');
+            scoreCard.nextAB();
+            tpDialog.dialog("close");
         });
     $( ".next-ab")
         .button()
         .click(function() {
             scoreCard.nextAB();
         });
+    $( ".on-base").button();
     $( ".double-play")
         .button()
         .click(function() {
             $( "#double-play-dialog" ).dialog( "open" );
         });
+    $( ".triple-play")
+        .button()
+        .click(function() {
+            $( "#triple-play-dialog" ).dialog( "open" );
+        });
     $( ".advance-runners" )
         .button()
-        .click(function(id) {
+        .click(function() {
             $( "#advance-runner-dialog-form" ).dialog( "open" );
         });
     $( "#accordion" ).accordion({
@@ -1075,7 +1226,7 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.moveTo(this.x+(BOX_W_H *.25),this.y+(BOX_W_H *.5));
         this.ctx.lineTo(this.x+(BOX_W_H *.5),this.y+(BOX_W_H *.75));
         this.ctx.stroke();
-        this.ctx.fillText(how,this.x+(BOX_W_H *.15),this.y+(BOX_W_H *.75));
+        this.ctx.fillText(how,this.x+(BOX_W_H *.07),this.y+(BOX_W_H *.75));
         //reset original lineWidth
         this.ctx.lineWidth = 1;
     }
@@ -1132,7 +1283,7 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.moveTo(this.x+(BOX_W_H *.3125),this.y+(BOX_W_H *.6875));
         this.ctx.lineTo(this.x+(BOX_W_H *.4375),this.y+(BOX_W_H *.5625));
         this.ctx.stroke();
-        this.ctx.fillText(how,this.x+(BOX_W_H *.15),this.y+(BOX_W_H *.75));
+        this.ctx.fillText(how,this.x+(BOX_W_H *.07),this.y+(BOX_W_H *.75));
         //reset original lineWidth
         this.ctx.lineWidth = 1;
     }
