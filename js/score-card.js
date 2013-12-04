@@ -172,22 +172,6 @@ function ScoreCard(canvas,overlay,batters)
             this.endInning();
             this.startInning();
         }
-/*
-        if(this.onFirst!=null)
-        {
-            this.currentAB.onFirst(this.onFirst.playerBox.player.number);
-        }
-
-        if(this.onSecond!=null)
-        {
-            this.currentAB.onSecond(this.onSecond.playerBox.player.number);
-        }
-
-        if(this.onThird!=null)
-        {
-            this.currentAB.onThird(this.onThird.playerBox.player.number);
-        }
-  */
     }
 
     this.recordOut = recordOut;
@@ -225,6 +209,7 @@ function ScoreCard(canvas,overlay,batters)
         if(this.onThird!=null)
         {
             this.onThird.runScored();
+            this.currentAB.toHome(how);
             this.currentAB.noRBIThird();
             this.onThird = null;
         }
@@ -318,144 +303,127 @@ function ScoreCard(canvas,overlay,batters)
     function preAB(eventString)
     {
         //All Pre at-bat events
-        switch(eventString.substring(0,2))
+        switch(eventString)
         {
-            // Stolen Base
-            case 'SB':
-                switch(eventString.substring(2))
+            // Steal Second
+            case 'SB12':
+                if(this.onFirst!=null)
                 {
-                    // Steal Second
-                    case '12':
-                        if(this.onFirst!=null)
-                        {
-                            this.onSecond = this.onFirst;
-                            this.onFirst = null;
-                            this.currentAB.toSecond('SB');
-                        }
-                        else
-                        {
-                            alert("Should Be Disabled: No runner on First");
-                        }
-                        break;
-                    // Steal Third
-                    case '23':
-                        if(this.onSecond!=null)
-                        {
-                            this.onThird = this.onSecond;
-                            this.onSecond = null;
-                            this.currentAB.toThird('SB');
-                        }
-                        else
-                        {
-                            alert("Should Be Disabled: No runner on Second");
-                        }
-                        break;
-                    // Steal Home
-                    case '3H':
-                        if(this.onThird!=null)
-                        {
-                            this.currentAB.toHome(eventString.substring(0,2));
-                            this.currentAB.noRBIThird()
-                            this.onThird.runScored();
-                            this.onThird = null;
-                        }
-                        else
-                        {
-                            alert("Should Be Disabled: No runner on Third");
-                        }
-                        break;
-                    // Double Steal
-                    case 'DS':
-                    case 'TS':
-                        this.advanceAllOneNoRBI(eventString);
-                        break;
+                    this.onSecond = this.onFirst;
+                    this.onFirst = null;
+                    this.currentAB.toSecond(eventString.substring(0,2));
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
                 }
                 break;
-            // Caught Stealing
-            case 'CS':
-                switch(eventString.substring(2))
+            // Steal Third
+            case 'SB23':
+                if(this.onSecond!=null)
                 {
-                    // Caught Stealing Second
-                    case '12':
-                        if(this.onFirst!=null)
-                        {
-                            this.currentAB.outToSecond(eventString);
-                            this.recordOut(this.onFirst);
-                            this.onFirst = null;
-                        }
-                        else
-                        {
-                            alert("Should Be Disabled: No runner on First");
-                        }
-                        break;
-                    // Caught Stealing Third
-                    case '23':
-                        if(this.onSecond!=null)
-                        {
-                            this.currentAB.outToThird(eventString);
-                            this.recordOut(this.onSecond);
-                            this.onSecond = null;
-                        }
-                        else
-                        {
-                            alert("Should Be Disabled: No runner on Second");
-                        }
-                        break;
-                    // Caught Stealing Home
-                    case '3H':
-                        if(this.onThird!=null)
-                        {
-                            this.currentAB.outToHome(eventString.substring(0,2));
-                            this.recordOut(this.onThird);
-                            this.onThird = null;
-                        }
-                        else
-                        {
-                            alert("Should Be Disabled: No runner on Third");
-                        }
-                        break;
+                    this.onThird = this.onSecond;
+                    this.onSecond = null;
+                    this.currentAB.toThird(eventString.substring(0,2));
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Second");
+                }
+                break;
+            // Steal Home
+            case 'SB3H':
+                if(this.onThird!=null)
+                {
+                    this.currentAB.toHome(eventString.substring(0,2));
+                    this.currentAB.noRBIThird()
+                    this.onThird.runScored();
+                    this.onThird = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Third");
+                }
+                break;
+            // Double Steal
+            case 'SBDS':
+            case 'SBTS':
+                this.advanceAllOneNoRBI(eventString.substring(0,2));
+                break;
+            // Caught Stealing
+            case 'CS12':
+                if(this.onFirst!=null)
+                {
+                    this.currentAB.outToSecond(eventString.substring(0,2));
+                    this.recordOut(this.onFirst);
+                    this.onFirst = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
+                }
+                break;
+            // Caught Stealing Third
+            case 'CS23':
+                if(this.onSecond!=null)
+                {
+                    this.currentAB.outToThird(eventString.substring(0,2));
+                    this.recordOut(this.onSecond);
+                    this.onSecond = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Second");
+                }
+                break;
+            // Caught Stealing Home
+            case 'CS3H':
+                if(this.onThird!=null)
+                {
+                    this.currentAB.outToHome(eventString.substring(0,2));
+                    this.recordOut(this.onThird);
+                    this.onThird = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Third");
                 }
                 break;
             // Pick Off
-            case 'PO':
-                switch(eventString.substring(2))
+            case 'PO1':
+                if(this.onFirst!=null)
                 {
-                    case '1':
-                        if(this.onFirst!=null)
-                        {
-                            this.currentAB.pickOffFirst();
-                            this.recordOut(this.onFirst);
-                            this.onFirst = null;
-                        }
-                        else
-                        {
-                            alert("Should Be Disabled: No runner on First");
-                        }
-                        break;
-                    case '2':
-                        if(this.onSecond!=null)
-                        {
-                            this.currentAB.pickOffSecond();
-                            this.recordOut(this.onSecond);
-                            this.onSecond = null;
-                        }
-                        else
-                        {
-                            alert("Should Be Disabled: No runner on Second");
-                        }
-                        break;
-                    case '3':
-                        if(this.onThird!=null)
-                        {
-                            this.currentAB.pickOffThird();
-                            this.recordOut(this.onThird);
-                            this.onThird = null;
-                        }
-                        else
-                        {
-                            alert("Should Be Disabled: No runner on Third");
-                        }
-                        break;
+                    this.currentAB.pickOffFirst();
+                    this.recordOut(this.onFirst);
+                    this.onFirst = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on First");
+                }
+            break;
+            case 'PO2':
+                if(this.onSecond!=null)
+                {
+                    this.currentAB.pickOffSecond();
+                    this.recordOut(this.onSecond);
+                    this.onSecond = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Second");
+                }
+                break;
+            case 'PO3':
+                if(this.onThird!=null)
+                {
+                    this.currentAB.pickOffThird();
+                    this.recordOut(this.onThird);
+                    this.onThird = null;
+                }
+                else
+                {
+                    alert("Should Be Disabled: No runner on Third");
                 }
                 break;
             // Balk, Wild Pitch, and Passed Ball
@@ -505,7 +473,7 @@ function ScoreCard(canvas,overlay,batters)
             case 'W':
             case 'I':
             case 'B':
-                if(this.onFirst!=0)
+                if(this.onFirst!=null)
                 {
                     this.advanceAllOneRBI();
                 }
@@ -518,6 +486,11 @@ function ScoreCard(canvas,overlay,batters)
             // Fielder's choice
             case 'F':
 
+                break;
+            case 'SF':
+            case 'SH':
+                this.recordOut(this.currentAB);
+                this.advanceAllOneRBI();
                 break;
         }
         this.currentAB.hit(abString);
@@ -688,7 +661,74 @@ function LineScore(canvas)
 
 function ControlArea(scoreCard,divControlArea)
 {
+    $( "#double-play-dialog" ).dialog({
+        autoOpen: false,
+        height: 300,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Next AB": function() {
+                $( this ).dialog( "close" );
+            }
+        },
+        close: function() {
+            scoreCard.nextAB();
+        }
+    });
 
+    $( "#advance-runner-dialog-form" ).dialog({
+        autoOpen: false,
+        height: 300,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Next AB": function() {
+                $( this ).dialog( "close" );
+            }
+        },
+        close: function() {
+            scoreCard.nextAB();
+        }
+    });
+
+    $( "#1H")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onFirst);
+            scoreCard.currentAB.outToSecond('DP');
+            scoreCard.onFirst = null;
+            scoreCard.recordOut(scoreCard.currentAB);
+            scoreCard.currentAB.hit('DP');
+            scoreCard.advanceAllOneNoRBI('DP');
+        });
+    $( "#2H")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onSecond);
+            scoreCard.currentAB.outToThird('DP');
+            scoreCard.onFirst = null;
+            scoreCard.recordOut(scoreCard.currentAB);
+            scoreCard.currentAB.hit('DP');
+        });
+    $( ".next-ab")
+        .button()
+        .click(function() {
+            scoreCard.nextAB();
+        });
+    $( ".double-play")
+        .button()
+        .click(function() {
+            $( "#double-play-dialog" ).dialog( "open" );
+        });
+    $( ".advance-runners" )
+        .button()
+        .click(function(id) {
+            $( "#advance-runner-dialog-form" ).dialog( "open" );
+        });
+    $( "#accordion" ).accordion({
+        collapsible: true,
+        heightStyle: "content"
+    });
 }
 
 /**
