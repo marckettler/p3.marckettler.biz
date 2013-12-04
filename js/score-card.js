@@ -155,6 +155,11 @@ function ScoreCard(canvas,overlay,batters)
     this.nextAB = nextAB
     function nextAB()
     {
+        if(this.outs==3)
+        {
+            this.currentAB.endInning();
+
+        }
         this.currentAB.playerBox.currentAB = false;
         this.currentAB.playerBox.draw();
         this.currentAB = this.onDeck;
@@ -162,6 +167,12 @@ function ScoreCard(canvas,overlay,batters)
         this.currentAB.playerBox.currentAB = true;
         this.currentAB.playerBox.draw();
 
+        if(this.outs==3)
+        {
+            this.endInning();
+            this.startInning();
+        }
+/*
         if(this.onFirst!=null)
         {
             this.currentAB.onFirst(this.onFirst.playerBox.player.number);
@@ -176,6 +187,7 @@ function ScoreCard(canvas,overlay,batters)
         {
             this.currentAB.onThird(this.onThird.playerBox.player.number);
         }
+  */
     }
 
     this.recordOut = recordOut;
@@ -470,22 +482,12 @@ function ScoreCard(canvas,overlay,batters)
         {
             // Single
             case 'S':
-                if(this.onFirst!=null)
-                {
-                    this.advanceAllOneRBI();
-                }
+                this.advanceAllOneRBI();
                 this.onFirst = this.currentAB;
                 break;
             // Double
             case 'D':
-                if(this.onFirst!=null)
-                {
-                    this.advanceAllTwoRBI();
-                }
-                else if(this.onSecond!=null)
-                {
-                    this.advanceAllOneRBI();
-                }
+                this.advanceAllTwoRBI();
                 this.onSecond = this.currentAB;
                 break;
             // Triple
@@ -497,30 +499,16 @@ function ScoreCard(canvas,overlay,batters)
             case 'H':
                 this.currentAB.runScored();
                 this.currentAB.rbiHome(this.currentAB.playerBox.player.number);
-                if(this.onFirst!=null)
-                {
-                    this.onFirst.runScored();
-                    this.currentAB.rbiFirst();
-                    this.onFirst = null;
-                }
-                if(this.onSecond!=null)
-                {
-                    this.onSecond.runScored();
-                    this.currentAB.rbiSecond();
-                    this.onSecond = null;
-                }
-                if(this.onThird!=null)
-                {
-                    this.onThird.runScored();
-                    this.currentAB.rbiThird();
-                    this.onThird = null;
-                }
+                this.advanceAllThreeRBI();
                 break;
             // Walk, Intentional Walk, and HBP
             case 'W':
             case 'I':
             case 'B':
-                this.advanceAllOneRBI();
+                if(this.onFirst!=0)
+                {
+                    this.advanceAllOneRBI();
+                }
                 this.onFirst = this.currentAB;
                 break;
             // Strikeout
@@ -534,37 +522,16 @@ function ScoreCard(canvas,overlay,batters)
         }
         this.currentAB.hit(abString);
         // show hit results in next AB
-        if(this.onFirst!=null)
-            this.onDeck.onFirst(this.onFirst.playerBox.player.number);
-        if(this.onSecond!=null)
-            this.onDeck.onSecond(this.onSecond.playerBox.player.number);
-        if(this.onThird!=null)
-            this.onDeck.onThird(this.onThird.playerBox.player.number);
-
-        if(this.outs==3)
+        if(this.outs!=3)
         {
-            this.currentAB.endInning();
-            this.endInning();
-            this.nextAB();
-            this.startInning();
+            if(this.onFirst!=null)
+                this.onDeck.onFirst(this.onFirst.playerBox.player.number);
+            if(this.onSecond!=null)
+                this.onDeck.onSecond(this.onSecond.playerBox.player.number);
+            if(this.onThird!=null)
+                this.onDeck.onThird(this.onThird.playerBox.player.number);
         }
-console.log("End of processAB");
-if(this.onFirst!=null)
-{
-    console.log("onFirst");
-    console.log(this.onFirst.playerBox.player);
-}
-if(this.onSecond!=null)
-{
-    console.log("onSecond");
-    console.log(this.onSecond.playerBox.player);
-}
-if(this.onThird!=null)
-{
-    console.log("onThird");
-    console.log(this.onThird.playerBox.player);
-}
-    }
+    }// end processAB
 
     this.postAB = postAB;
     function postAB(abString)
@@ -708,30 +675,8 @@ if(this.onThird!=null)
                 }
                 break;
         }
-        if(this.outs==3)
-        {
-            this.currentAB.endInning();
-            this.endInning();
-            this.nextAB();
-            this.startInning();
-        }
-console.log("End of postAB");
-if(this.onFirst!=null)
-{
-console.log("onFirst");
-console.log(this.onFirst.playerBox.player);
-}
-if(this.onSecond!=null)
-{
-console.log("onSecond");
-console.log(this.onSecond.playerBox.player);
-}
-if(this.onThird!=null)
-{
-console.log("onThird");
-console.log(this.onThird.playerBox.player);
-}
-    }
+    }// end postAB()
+
     // must come after the method definition because it is called in the constructor
     this.startInning();
 }

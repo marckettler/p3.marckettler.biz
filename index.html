@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <title>Baseball Scorecard</title>
     <link rel="stylesheet" href="css/p3.css">
@@ -12,6 +12,23 @@
         var controlArea;
         function pageLoad()
         {
+            scoreCard = new ScoreCard($("#bg"),$("#fg"),9);
+            controlArea = new ControlArea(scoreCard,$("#controlArea"));
+            $( "#double-play-dialog" ).dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Next AB": function() {
+                        $( this ).dialog( "close" );
+                    }
+                },
+                close: function() {
+                    scoreCard.nextAB();
+                }
+            });
+
             $( "#advance-runner-dialog-form" ).dialog({
                 autoOpen: false,
                 height: 300,
@@ -27,6 +44,23 @@
                 }
             });
 
+            $( "#1H")
+                    .button()
+                    .click(function(){
+                        scoreCard.recordOut(scoreCard.onFirst);
+                        scoreCard.onFirst = null;
+                        scoreCard.recordOut(scoreCard.currentAB);
+                    });
+            $( ".next-ab")
+                    .button()
+                    .click(function() {
+                        scoreCard.nextAB();
+                    });
+            $( ".double-play")
+                    .button()
+                    .click(function() {
+                        $( "#double-play-dialog" ).dialog( "open" );
+                    });
             $( ".advance-runners" )
                     .button()
                     .click(function(id) {
@@ -36,8 +70,6 @@
                 collapsible: true,
                 heightStyle: "content"
             });
-            scoreCard = new ScoreCard($("#bg"),$("#fg"),9);
-            controlArea = new ControlArea(scoreCard,$("#controlArea"));
         }
     </script>
 </head>
@@ -49,14 +81,24 @@
         </div>
         <div class="controlArea" id="controlArea">
             <div id="accordion">
-                <h3>AB Events</h3>
+                <h3>Hits/Walks</h3>
                 <div>
-                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('S')">Single</button>
-                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('D')">Double</button>
-                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('T')">Triple</button>
-                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('H')">Home Run!</button>
-                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('W')">Walk</button>
-                    <button type="button" class="advance-runners" onclick="scoreCard.processAB('K')">Out</button>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('S')">Single</button>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('D')">Double</button></br>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('T')">Triple</button>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('H')">Home Run!</button></br>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('W')">Walk</button>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('I')">Intentional Walk</button>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('B')">Hit By Pitch</button>
+                </div>
+                <h3>Outs</h3>
+                <div>
+                    <button type="button" onclick="scoreCard.processAB('F')">Fielder's Choice</button>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('K')">Strikeout</button>
+                    <button type="button" class="double-play">Double Play</button>
+                    <button type="button" class="triple-play">Triple Play</button>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('')">Sac Fly</button>
+                    <button type="button" class="next-ab" onclick="scoreCard.processAB('K')">Sac Hit/Bunt</button>
                 </div>
                 <h3>Base Running Events</h3>
                 <div>
@@ -87,6 +129,16 @@
                 <button type="button" onclick="scoreCard.postAB('2xH')">2xH</button>
                 <button type="button" onclick="scoreCard.postAB('3-H')">3-H</button>
                 <button type="button" onclick="scoreCard.postAB('3xH')">3xH</button>
+            </div>
+        </div>
+        <div id="double-play-dialog" title="Outs At">
+            <div>
+                <button type="button" id="1H">1st & 2nd</button>
+                <button type="button" id="2H"></button>
+                <button type="button" id="3H">Out to 3rd</button>
+                <button type="button" id="21">Out to Home</button>
+                <button type="button" id="31">1-H</button>
+                <button type="button" id="32">1xH</button>
             </div>
         </div>
     </div>
