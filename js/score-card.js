@@ -166,6 +166,8 @@ function ScoreCard(canvas,overlay,batters)
             this.controlArea.fbOptions.hide();
             this.controlArea.sbOptions.hide();
             this.controlArea.tbOptions.hide();
+            this.controlArea.dpOptions.hide();
+            this.controlArea.dpOptions.hide();
         }
         else
         {
@@ -209,7 +211,43 @@ function ScoreCard(canvas,overlay,batters)
             {
                 this.controlArea.tbOptions.hide();
             }
+
+            if(this.outs==0 && this.twoRunnersOn())
+            {
+                if(!this.controlArea.tpOptions.is(":visible"))
+                {
+                    this.controlArea.tpOptions.show();
+                }
+            }
+            else
+            {
+                this.controlArea.tpOptions.hide();
+            }
+
+            if(this.outs < 2 && this.oneRunnerOn())
+            {
+                if(!this.controlArea.dpOptions.is(":visible"))
+                {
+                    this.controlArea.dpOptions.show();
+                }
+            }
+            else
+            {
+                this.controlArea.dpOptions.hide();
+            }
         }
+    }
+
+    this.oneRunnerOn = oneRunnerOn;
+    function oneRunnerOn()
+    {
+        return (this.onFirst!=null || this.onSecond!=null || this.onThird!=null);
+    }
+
+    this.twoRunnersOn = twoRunnersOn;
+    function twoRunnersOn()
+    {
+        return (this.onFirst!=null && this.onSecond!=null) || (this.onFirst!=null && this.onThird!=null) || (this.onSecond!=null && this.onThird!=null);
     }
 
     this.nextAB = nextAB
@@ -758,6 +796,7 @@ function LineScore(canvas)
 function ControlArea(scoreCard)
 {
     $( "#tabs" ).tabs();
+
     this.brOptions = $('.brOptions');
     this.brOptions.hide();
     this.fbOptions = $('.fbOptions');
@@ -766,6 +805,10 @@ function ControlArea(scoreCard)
     this.sbOptions.hide();
     this.tbOptions = $('.tbOptions');
     this.tbOptions.hide();
+    this.tpOptions = $('.tpOptions');
+    this.tpOptions.hide();
+    this.dpOptions = $('.dpOptions');
+    this.dpOptions.hide();
 
     var foDialog = $( "#fly-out-dialog" ).dialog({
         autoOpen: false,
@@ -966,6 +1009,19 @@ function ControlArea(scoreCard)
             scoreCard.nextAB();
             tpDialog.dialog("close");
         });
+    $( "#13H")
+        .button()
+        .click(function(){
+            scoreCard.recordOut(scoreCard.onSecond);
+            scoreCard.currentAB.outToThird('');
+            scoreCard.recordOut(scoreCard.onThird);
+            scoreCard.currentAB.outToHome('');
+            scoreCard.recordOut(scoreCard.currentAB);
+            scoreCard.currentAB.hit('TP');
+            scoreCard.nextAB();
+            tpDialog.dialog("close");
+        });
+
     $( ".next-ab")
         .button()
         .click(function() {

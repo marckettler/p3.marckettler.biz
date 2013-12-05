@@ -63,8 +63,8 @@
                         <button type="button" class="pop-out">Pop Up</button>
                         <button type="button" class="fielders-choice-out brOptions">Fielder's Choice</button>
                         <button type="button" class="next-ab" onclick="scoreCard.processAB('K')">Strikeout</button>
-                        <button type="button" class="double-play brOptions">Double Play</button>
-                        <button type="button" class="triple-play brOptions">Triple Play</button>
+                        <button type="button" class="double-play dpOptions">Double Play</button>
+                        <button type="button" class="triple-play tpOptions">Triple Play</button>
                         <button type="button" class="next-ab brOptions" onclick="scoreCard.processAB('SF')">Sac Fly</button>
                         <button type="button" class="next-ab brOptions" onclick="scoreCard.processAB('SH')">Sac Hit/Bunt</button>
                     </div>
@@ -106,16 +106,17 @@
                     <button type="button" id="1H" class="fbOptions">1st & 2nd</button>
                     <button type="button" id="2H" class="sbOptions">1st & 3rd</button>
                     <button type="button" id="3H" class="tbOptions">1st & Home</button>
-                    <button type="button" id="21" class="fbOptions">2nd & 3rd</button>
-                    <button type="button" id="31" class="fbOptions">2nd & Home</button>
+                    <button type="button" id="21" class="fbOptions sbOptions">2nd & 3rd</button>
+                    <button type="button" id="31" class="fbOptions tbOptions">2nd & Home</button>
                     <button type="button" id="32dp" class="sbOptions tbOptions">3rd & Home</button>
                 </div>
             </div>
             <div id="triple-play-dialog" title="Outs At">
                 <div>
-                    <button type="button" id="123" class="fbOptions">1st & 2nd & 3rd</button>
-                    <button type="button" id="12H" class="fbOptions">1st & 2nd & Home</button>
-                    <button type="button" id="23H">2nd & 3rd & Home</button>
+                    <button type="button" id="123" class="fbOptions sbOptions">1st & 2nd & 3rd</button>
+                    <button type="button" id="12H" class="fbOptions tbOptions">1st & 2nd & Home</button>
+                    <button type="button" id="13H" class="sbOptions tbOptions">1st & 3rd & Home</button>
+                    <button type="button" id="23H" class="fbOptions sbOptions tbOptions">2nd & 3rd & Home</button>
                 </div>
             </div>
             <div id="ground-out-dialog" title="Out from">
