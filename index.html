@@ -14,6 +14,7 @@
         {
             scoreCard = new ScoreCard($("#bg"),$("#fg"),9);
             controlArea = new ControlArea(scoreCard);
+            scoreCard.controlArea = controlArea;
         }
     </script>
 </head>
@@ -40,26 +41,26 @@
                     <button type="button" class="fly-out">Fly Ball</button>
                     <button type="button" class="ground-out">Ground Ball</button>
                     <button type="button" class="pop-out">Pop Up</button>
-                    <button type="button" class="fielders-choice-out">Fielder's Choice</button>
+                    <button type="button" class="fielders-choice-out brOptions">Fielder's Choice</button>
                     <button type="button" class="next-ab" onclick="scoreCard.processAB('K')">Strikeout</button>
-                    <button type="button" class="double-play">Double Play</button>
-                    <button type="button" class="triple-play">Triple Play</button>
-                    <button type="button" class="next-ab" onclick="scoreCard.processAB('SF')">Sac Fly</button>
-                    <button type="button" class="next-ab" onclick="scoreCard.processAB('SH')">Sac Hit/Bunt</button>
+                    <button type="button" class="double-play brOptions">Double Play</button>
+                    <button type="button" class="triple-play brOptions">Triple Play</button>
+                    <button type="button" class="next-ab brOptions" onclick="scoreCard.processAB('SF')">Sac Fly</button>
+                    <button type="button" class="next-ab brOptions" onclick="scoreCard.processAB('SH')">Sac Hit/Bunt</button>
                 </div>
-                <h3>Base Running Events</h3>
-                <div>
-                    <button type="button" class="on-base" onclick="scoreCard.preAB('SB12')">Steal 2nd</button>
-                    <button type="button" class="on-base" onclick="scoreCard.preAB('SB23')">Steal 3rd</button>
-                    <button type="button" class="on-base" onclick="scoreCard.preAB('SB3H')">Steal Home</button>
+                <h3 class="brOptions">Base Running Events</h3>
+                <div class="brOptions">
+                    <button type="button" class="on-base fbOptions" onclick="scoreCard.preAB('SB12')">Steal 2nd</button>
+                    <button type="button" class="on-base sbOptions" onclick="scoreCard.preAB('SB23')">Steal 3rd</button>
+                    <button type="button" class="on-base tbOptions" onclick="scoreCard.preAB('SB3H')">Steal Home</button>
                     <button type="button" class="on-base" onclick="scoreCard.preAB('SBDS')">Double Steal</button>
                     <button type="button" class="on-base" onclick="scoreCard.preAB('SBTS')">Triple Steal</button>
-                    <button type="button" class="on-base" onclick="scoreCard.preAB('CS12')">CS 2nd</button>
-                    <button type="button" class="on-base" onclick="scoreCard.preAB('CS23')">CS 3rd</button>
-                    <button type="button" class="on-base" onclick="scoreCard.preAB('CS3H')">CS Home</button>
-                    <button type="button" class="on-base" onclick="scoreCard.preAB('PO1')">PO 1st</button>
-                    <button type="button" class="on-base" onclick="scoreCard.preAB('PO2')">PO 2nd</button>
-                    <button type="button" class="on-base" onclick="scoreCard.preAB('PO3')">PO 3rd</button>
+                    <button type="button" class="on-base fbOptions" onclick="scoreCard.preAB('CS12')">CS 2nd</button>
+                    <button type="button" class="on-base sbOptions" onclick="scoreCard.preAB('CS23')">CS 3rd</button>
+                    <button type="button" class="on-base tbOptions" onclick="scoreCard.preAB('CS3H')">CS Home</button>
+                    <button type="button" class="on-base fbOptions" onclick="scoreCard.preAB('PO1')">PO 1st</button>
+                    <button type="button" class="on-base sbOptions" onclick="scoreCard.preAB('PO2')">PO 2nd</button>
+                    <button type="button" class="on-base tbOptions" onclick="scoreCard.preAB('PO3')">PO 3rd</button>
                     <button type="button" class="on-base" onclick="scoreCard.preAB('BK')">Balk</button>
                 </div>
             </div>
@@ -82,18 +83,18 @@
         </div>
         <div id="double-play-dialog" title="Outs At">
             <div>
-                <button type="button" id="1H">1st & 2nd</button>
-                <button type="button" id="2H">1st & 3rd</button>
-                <button type="button" id="3H">1st & Home</button>
-                <button type="button" id="21">2nd & 3rd</button>
-                <button type="button" id="31">2nd & Home</button>
-                <button type="button" id="32">3rd & Home</button>
+                <button type="button" id="1H" class="fbOptions">1st & 2nd</button>
+                <button type="button" id="2H" class="sbOptions">1st & 3rd</button>
+                <button type="button" id="3H" class="tbOptions">1st & Home</button>
+                <button type="button" id="21" class="fbOptions">2nd & 3rd</button>
+                <button type="button" id="31" class="fbOptions">2nd & Home</button>
+                <button type="button" id="32dp" class="sbOptions tbOptions">3rd & Home</button>
             </div>
         </div>
         <div id="triple-play-dialog" title="Outs At">
             <div>
-                <button type="button" id="123">1st & 2nd & 3rd</button>
-                <button type="button" id="12H">1st & 2nd & Home</button>
+                <button type="button" id="123" class="fbOptions">1st & 2nd & 3rd</button>
+                <button type="button" id="12H" class="fbOptions">1st & 2nd & Home</button>
                 <button type="button" id="23H">2nd & 3rd & Home</button>
             </div>
         </div>
@@ -126,9 +127,38 @@
         </div>
         <div id="fielders-choice-out-dialog" title="Out at">
             <div>
-                <button type="button" class="fco">2nd</button>
-                <button type="button" class="fco">3rd</button>
-                <button type="button" class="fco">Home</button>
+                <div>
+                    <button type="button" class="fco fbOptions" id="14">P to 2nd</button>
+                    <button type="button" class="fco fbOptions" id="24">C to 2nd</button>
+                    <button type="button" class="fco fbOptions" id="34">1st to 2nd</button>
+                    <button type="button" class="fco fbOptions" id="64">SS to 2nd</button>
+                    <button type="button" class="fco fbOptions" id="54">3rd to 2nd</button>
+                    <button type="button" class="fco fbOptions" id="44">2nd Unassisted</button>
+                </div>
+                <div>
+                    <button type="button" class="fco fbOptions" id="16">P to SS</button>
+                    <button type="button" class="fco fbOptions" id="26">C to SS</button>
+                    <button type="button" class="fco fbOptions" id="36">1st to SS</button>
+                    <button type="button" class="fco fbOptions" id="46">2nd to SS</button>
+                    <button type="button" class="fco fbOptions" id="56">3rd to SS</button>
+                    <button type="button" class="fco fbOptions" id="66">SS Unassisted</button>
+                </div>
+                <div>
+                    <button type="button" class="fco sbOptions" id="15">P to 3rd</button>
+                    <button type="button" class="fco sbOptions" id="25">C to 3rd</button>
+                    <button type="button" class="fco sbOptions" id="35">1st to 3rd</button>
+                    <button type="button" class="fco sbOptions" id="45">2nd to 3rd</button>
+                    <button type="button" class="fco sbOptions" id="65">SS to 3rd</button>
+                    <button type="button" class="fco sbOptions" id="55">3rd Unassisted</button>
+                </div>
+                <div>
+                    <button type="button" class="fco tbOptions" id="12">P to C</button>
+                    <button type="button" class="fco tbOptions" id="32">1st to C</button>
+                    <button type="button" class="fco tbOptions" id="42">2nd to C</button>
+                    <button type="button" class="fco tbOptions" id="52">3rd to C</button>
+                    <button type="button" class="fco tbOptions" id="62">SS to C</button>
+                    <button type="button" class="fco tbOptions" id="22">C Unassisted</button>
+                </div>
             </div>
         </div>
     </div>

@@ -16,7 +16,7 @@ function ScoreCard(canvas,overlay,batters)
     this.overlay = overlay;
     this.canvas[0].width = 1000;
     this.canvas[0].height = 500;
-
+    this.controlArea = null;
     /*
     not sure I am going to do anything with the overlay
     this.overlay.css("width","800");
@@ -45,7 +45,7 @@ function ScoreCard(canvas,overlay,batters)
     this.y = 0;
 
     //draw score card header
-    drawScoreCardHeader(this.canvas[0],this.overlay[0]);
+    drawLineUpCardHeader(this.canvas[0],this.overlay[0]);
     drawHeading(this.canvas[0],this.x,this.y);
     this.y = 25;
     //draw player boxes
@@ -97,7 +97,6 @@ function ScoreCard(canvas,overlay,batters)
     }
     //part of constructor
     this.onDeck = this.findEventBox(this.currentAB.abNum+1);
-
     /**
      *
      *
@@ -120,7 +119,7 @@ function ScoreCard(canvas,overlay,batters)
      * @param canvas
      * @param overlay
      */
-    function drawScoreCardHeader(canvas,overlay)
+    function drawLineUpCardHeader(canvas)
     {
         var ctx = canvas.getContext("2d");
         ctx.font = 25/2+'px Sans-Serif';
@@ -151,6 +150,67 @@ function ScoreCard(canvas,overlay,batters)
     {
         this.currentAB.startInning(this.inning);
     }
+    this.runnersOn = runnersOn;
+    function runnersOn()
+    {
+        return (this.onFirst!=null || this.onSecond!=null || this.onThird!=null);
+    }
+
+    this.disableMenuOptions = disableMenuOptions;
+    function disableMenuOptions()
+    {
+        //if there are no runners on hide base running options
+        if(!this.runnersOn())
+        {
+            this.controlArea.brOptions.hide();
+            this.controlArea.fbOptions.hide();
+            this.controlArea.sbOptions.hide();
+            this.controlArea.tbOptions.hide();
+        }
+        else
+        {
+            if(!this.controlArea.brOptions.is(":visible"))
+            {
+                this.controlArea.brOptions.show();
+            }
+
+            if(this.onFirst!=null)
+            {
+                if(!this.controlArea.fbOptions.is(":visible"))
+                {
+                    this.controlArea.fbOptions.show();
+                }
+            }
+            else
+            {
+                this.controlArea.fbOptions.hide();
+            }
+
+            if(this.onSecond!=null)
+            {
+                if(!this.controlArea.sbOptions.is(":visible"))
+                {
+                    this.controlArea.sbOptions.show();
+                }
+            }
+            else
+            {
+                this.controlArea.sbOptions.hide();
+            }
+
+            if(this.onThird!=null)
+            {
+                if(!this.controlArea.tbOptions.is(":visible"))
+                {
+                    this.controlArea.tbOptions.show();
+                }
+            }
+            else
+            {
+                this.controlArea.tbOptions.hide();
+            }
+        }
+    }
 
     this.nextAB = nextAB
     function nextAB()
@@ -172,6 +232,8 @@ function ScoreCard(canvas,overlay,batters)
             this.endInning();
             this.startInning();
         }
+
+        this.disableMenuOptions();
     }
 
     this.recordOut = recordOut;
@@ -326,6 +388,14 @@ function ScoreCard(canvas,overlay,batters)
     {
         this.recordOut(this.currentAB);
         this.currentAB.hit(to);
+    }
+
+    this.fcOut = fcOut;
+    function fcOut(from,outAt)
+    {
+        this.recordOut(outAt);
+        this.currentAB.hit(from);
+        this.onFirst = this.currentAB;
     }
 
     this.preAB = preAB;
@@ -518,10 +588,6 @@ function ScoreCard(canvas,overlay,batters)
             case 'K':
                 this.recordOut(this.currentAB);
                 break;
-            // Fielder's choice
-            case 'F':
-
-                break;
             case 'SF':
             case 'SH':
                 this.recordOut(this.currentAB);
@@ -691,6 +757,15 @@ function LineScore(canvas)
 
 function ControlArea(scoreCard)
 {
+    this.brOptions = $('.brOptions');
+    this.brOptions.hide();
+    this.fbOptions = $('.fbOptions');
+    this.fbOptions.hide();
+    this.sbOptions = $('.sbOptions');
+    this.sbOptions.hide();
+    this.tbOptions = $('.tbOptions');
+    this.tbOptions.hide();
+
     var foDialog = $( "#fly-out-dialog" ).dialog({
         autoOpen: false,
         height: 300,
@@ -712,10 +787,10 @@ function ControlArea(scoreCard)
         modal: true
     });
 
-    var fcDialog = $( "#fielders-choice-out-dialog" ).dialog({
+    var fcoDialog = $( "#fielders-choice-out-dialog" ).dialog({
         autoOpen: false,
         height: 300,
-        width: 350,
+        width: 520,
         modal: true
     });
 
@@ -834,7 +909,7 @@ function ControlArea(scoreCard)
             scoreCard.showRunners(scoreCard.currentAB);
             dpDialog.dialog("close");
         });
-    $( "#32")
+    $( "#32dp")
         .button()
         .click(function(){
             scoreCard.recordOut(scoreCard.onSecond);
@@ -933,14 +1008,37 @@ function ControlArea(scoreCard)
     $( ".fielders-choice-out")
         .button()
         .click(function() {
-            $( "#ground-out-dialog" ).dialog( "open" );
+            $( "#fielders-choice-out-dialog" ).dialog( "open" );
         });
     $( ".fco")
         .button()
         .click(function() {
-            scoreCard.flyOut(this.id);
+            // runner will be passed to fcOut
+            var runner;
+            switch(this.id.substring(1))
+            {
+                case '2':
+                    runner = scoreCard.onThird;
+                    // take runner off third
+                    scoreCard.onThird = null;
+                    scoreCard.currentAB.outToHome(this.id);
+                    break;
+                case '4':
+                case '6':
+                    runner = scoreCard.onFirst;
+                    scoreCard.currentAB.outToSecond(this.id);
+                    break;
+                case '5':
+                    runner = scoreCard.onSecond;
+                    scoreCard.onSecond = null;
+                    scoreCard.currentAB.outToThird(this.id);
+                    break;
+            }
+            scoreCard.advanceAllOneRBI();
+            scoreCard.fcOut("FC"+this.id, runner);
             scoreCard.nextAB();
-            goDialog.dialog("close");
+            scoreCard.showRunners(scoreCard.currentAB);
+            fcoDialog.dialog("close");
         });
     $( ".pop-out")
         .button()
