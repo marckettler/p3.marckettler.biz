@@ -532,7 +532,7 @@ function ScoreCard(canvas,overlay,batters)
                 this.advanceAllOneNoRBI(eventString);
                 break;
         }
-
+        this.disableMenuOptions();
         if(this.outs==3)
         {
             this.currentAB.endInning();
@@ -757,6 +757,7 @@ function LineScore(canvas)
 
 function ControlArea(scoreCard)
 {
+    $( "#tabs" ).tabs();
     this.brOptions = $('.brOptions');
     this.brOptions.hide();
     this.fbOptions = $('.fbOptions');
