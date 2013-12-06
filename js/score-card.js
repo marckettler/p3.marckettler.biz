@@ -1,4 +1,8 @@
 /**
+ * score-card.js is a js tool built with custom js, jquery, and jquery ui.
+ * It is a simple baseball scorecard that uses a Modified Riesner Scorekeeping scorecard.
+ * In future versions I hope to expand the functionality of the scorecard to be able to create and parse
+ * Project Scorecard style baseball scorecards.
  * Created by Marc Kettler on 11/20/13.
  */
 
@@ -6,7 +10,7 @@
 /**
  *
  * @param canvas The jquery Canvas object this Scorecard in Drawn on
- * @param overlay The jquery Canvas object used as a foreground. May be used for ui.
+ * @param overlay The jquery Canvas object used as a foreground. May be used for ui in future versions
  * @param batters The number of batters in the lineup
  * @constructor
  */
@@ -16,16 +20,8 @@ function ScoreCard(canvas,overlay,batters)
     this.overlay = overlay;
     this.canvas[0].width = 1000;
     this.canvas[0].height = 550;
+    //reference to control area
     this.controlArea = null;
-    /*
-    not sure I am going to do anything with the overlay
-    this.overlay.css("width","800");
-    this.overlay.css("height", "500");
-    this.overlay.css("opacity","0");
-    this.overlay.css("background-color","green");
-    */
-
-    this.abNum = 1;
     this.inning = 1;
     this.runs = 0;
     this.hits = 0;
@@ -36,6 +32,7 @@ function ScoreCard(canvas,overlay,batters)
     this.onSecond = null;
     this.onThird = null;
     this.playerBoxes = new Array(batters);
+    //create the two dimentional array of eventboxes
     this.eventBoxes = new Array(batters);
     for (var i = 0; i < this.eventBoxes.length; i++)
     {
@@ -43,6 +40,7 @@ function ScoreCard(canvas,overlay,batters)
     }
 
     this.abNum = 1;
+    //not the xy coordinates for the canvas used for initial setup should probably just be local variables
     this.x = 120;
     this.y = 0;
 
@@ -50,7 +48,7 @@ function ScoreCard(canvas,overlay,batters)
     drawLineUpCardHeader(this.canvas[0]);
     drawHeading(this.canvas[0],this.x,this.y);
     this.y = 25;
-    //draw player boxes
+    //initialize and draw playerBoxes
     for (var i = 0; i < this.eventBoxes.length; i++)
     {
 
@@ -58,9 +56,12 @@ function ScoreCard(canvas,overlay,batters)
         this.playerBoxes[i].draw();
         this.y += 50;
     }
+    //initialize and draw lineScore. Not a true line score needs work
     this.lineScore = new LineScore(this.canvas[0],0,this.y);
     this.lineScore.draw(this.hits,this.runs);
     this.y=25;
+
+    //initialize and draw EventBoxez
     for (var i = 0; i < this.eventBoxes[0].length; i++)
     {
         for (var j = 0; j < this.eventBoxes.length; j++)
@@ -74,15 +75,16 @@ function ScoreCard(canvas,overlay,batters)
         this.y = 25;
     }
 
-
+    // Set current AB and redraw to show the active AB
     this.currentAB = this.eventBoxes[0][0];
     this.currentAB.playerBox.currentAB = true;
     this.currentAB.playerBox.draw();
 
     /**
-     *
+     * Used to find an eventBox. Useful for planned future functionality.
+     * Currently only used to Advance to the next AB
      * @param eventBoxes
-     * @param boxID corresponds to the
+     * @param boxID of the box being searched for.
      * @returns {*} The EventBox represented by boxID
      */
     this.findEventBox = findEventBox;
@@ -99,14 +101,14 @@ function ScoreCard(canvas,overlay,batters)
             }
         }
     }
-    //part of constructor
+
+    //part of constructor if I do not put it after the method declaration above this causes issues
     this.onDeck = this.findEventBox(this.currentAB.abNum+1);
     /**
-     *
-     *
-     * @param canvas
-     * @param x
-     * @param y
+     * private method used to draw the heading of the scorecard
+     * @param canvas of this scorecard
+     * @param x location of heading
+     * @param y location of heading
      */
     function drawHeading(canvas,x,y)
     {
@@ -119,9 +121,8 @@ function ScoreCard(canvas,overlay,batters)
     }
 
     /**
-     *
-     * @param canvas
-     * @param overlay
+     * private method used to draw the Line up card portion of the scorecard
+     * @param canvas of this scorecard
      */
     function drawLineUpCardHeader(canvas)
     {
@@ -136,7 +137,7 @@ function ScoreCard(canvas,overlay,batters)
     }
 
     /**
-     *
+     * used for end of inning cleanup
      * @type {Function}
      */
     this.endInning = endInning;
@@ -149,11 +150,22 @@ function ScoreCard(canvas,overlay,batters)
         this.onThird = null;
     }
 
+    /**
+     * used for start of inning prep
+     * for now only draws the start inning box inside the event box of the player starting the inning
+     * @type {Function}
+     */
     this.startInning = startInning;
     function startInning()
     {
         this.currentAB.startInning(this.inning);
     }
+
+    /**
+     * check to see if any runner is on
+     * returns boolean
+     * @type {Function}
+     */
     this.runnerOn = runnerOn;
     function runnerOn()
     {
@@ -171,7 +183,6 @@ function ScoreCard(canvas,overlay,batters)
         if(!this.runnerOn())
         {
             this.controlArea.hideAll();
-            //this.controlArea.toggleBaseRunningEvents();
         }
         else
         {
@@ -216,7 +227,6 @@ function ScoreCard(canvas,overlay,batters)
                 }
                 else if(this.secondAndThird())
                 {
-                    console.log("wtf");
                     $('.steal3').hide();
                 }
             }
@@ -302,12 +312,24 @@ function ScoreCard(canvas,overlay,batters)
         }
     }
 
+    /**
+     * checks for the situation where runners are on first and second
+     * bases may be loaded but this check doesn't care
+     * returns boolean
+     * @type {Function}
+     */
     this.firstAndSecond = firstAndSecond
     function firstAndSecond()
     {
         return (this.onFirst!=null && this.onSecond!=null);
     }
 
+    /**
+     * checks for the situation where runners are on first and third
+     * bases may be loaded but this check doesn't care
+     * returns boolean
+     * @type {Function}
+     */
     this.firstAndThird = firstAndThird
     function firstAndThird()
     {
@@ -315,59 +337,100 @@ function ScoreCard(canvas,overlay,batters)
     }
 
 
+    /**
+     * checks for the situation where runners are on second and third
+     * bases may be loaded but this check doesn't care
+     * returns boolean
+     * @type {Function}
+     */
     this.secondAndThird = secondAndThird
     function secondAndThird()
     {
         return (this.onSecond!=null && this.onThird!=null);
     }
 
+    /**
+     * checks to see if two runners are on base
+     * bases may be loaded this check doesn't care
+     * returns boolean
+     * @type {Function}
+     */
     this.twoRunnersOn = twoRunnersOn;
     function twoRunnersOn()
     {
-        return  ( this.firstAndSecond() || this.onCorners() || this.secondAndThird() );
+        return  ( this.firstAndSecond() || this.firstAndThird() || this.secondAndThird() );
     }
 
+    /**
+     * checks to see if runners are on 1st and 3rd
+     * this check does care if bases are loaded and will only return true for the on the corners situation
+     * returns boolean
+     * @type {Function}
+     */
     this.onCorners = onCorners;
     function onCorners()
     {
         return(this.onFirst!=null&&this.onSecond==null&&this.onThird!=null);
     }
+
+    /**
+     * checks to see if the bases are loaded
+     * returns boolean
+     * @type {Function}
+     */
     this.areBasesLoaded = areBasesLoaded;
     function areBasesLoaded()
     {
         return(this.onFirst!=null&&this.onSecond!=null&&this.onThird!=null);
     }
 
+    /**
+     * move to the next at-Bat. Checking for end of inning conditions and updating line score and menu options
+     * @type {Function}
+     */
     this.nextAB = nextAB
     function nextAB()
     {
+        //if inning is over draw end of inning in current AB.
         if(this.outs==3)
         {
             this.currentAB.endInning();
-
         }
+        //disable current active playerbox then redraw
         this.currentAB.playerBox.currentAB = false;
         this.currentAB.playerBox.draw();
+        // move on deck hitter to the plate
         this.currentAB = this.onDeck;
+        // find next on deck
         this.onDeck = this.findEventBox(this.currentAB.abNum + 1);
+        //activate currentab playerbox and redraw.
         this.currentAB.playerBox.currentAB = true;
         this.currentAB.playerBox.draw();
-
+        //process end of inning
         if(this.outs==3)
         {
             this.endInning();
             this.startInning();
         }
+        //draw linescore and menus
         this.lineScore.draw(this.hits,this.runs);
         this.disableMenuOptions();
     }
 
+    /**
+     * Record an out in the eventBox passed in.
+     * @type {Function}
+     */
     this.recordOut = recordOut;
     function recordOut(eventBox)
     {
         eventBox.drawOut(++this.outs);
     }
 
+    /**
+     * advance all runners one base recording an RBI if a run scores
+     * @type {Function}
+     */
     this.advanceAllOneRBI = advanceAllOneRBI;
     function advanceAllOneRBI()
     {
@@ -391,6 +454,11 @@ function ScoreCard(canvas,overlay,batters)
         }
     }
 
+    /**
+     * advance all runners one base not recording an RBI
+     * useful for Wild Pitches, Stolen Bases, errors and other ways a runner will score an unearned run
+     * @type {Function}
+     */
     this.advanceAllOneNoRBI = advanceAllOneNoRBI;
     function advanceAllOneNoRBI(how)
     {
@@ -417,6 +485,10 @@ function ScoreCard(canvas,overlay,batters)
         }
     }
 
+    /**
+     * Advance all runners two bases and record RBIs
+     * @type {Function}
+     */
     this.advanceAllTwoRBI = advanceAllTwoRBI;
     function advanceAllTwoRBI()
     {
@@ -442,6 +514,10 @@ function ScoreCard(canvas,overlay,batters)
         }
     }
 
+    /**
+     * Advance all runners three bases and record RBIs
+     * @type {Function}
+     */
     this.advanceAllThreeRBI = advanceAllThreeRBI;
     function advanceAllThreeRBI()
     {
@@ -469,6 +545,10 @@ function ScoreCard(canvas,overlay,batters)
         }
     }
 
+    /**
+     * Advance runners two bases no RBIs
+     * @type {Function}
+     */
     this.advanceAllTwoNoRBI = advanceAllTwoNoRBI;
     function advanceAllTwoNoRBI(how)
     {
@@ -496,6 +576,11 @@ function ScoreCard(canvas,overlay,batters)
         }
     }
 
+    /**
+     * Used to draw the runners currently on base in the event box passed in.
+     * The eventBox passed in will be either the currentAB or onDeck player.
+     * @type {Function}
+     */
     this.showRunners = showRunners;
     function showRunners(eventBox)
     {
@@ -507,14 +592,31 @@ function ScoreCard(canvas,overlay,batters)
             eventBox.onThird(this.onThird.playerBox.player.number);
     }
 
+    /**
+     * record a flyOut
+     * @type {Function}
+     */
     this.flyOut = flyOut;
+    /**
+     *
+     * @param to The location of the fielder the ball was hit to.
+     */
     function flyOut(to)
     {
         this.recordOut(this.currentAB);
         this.currentAB.hit(to);
     }
 
+    /**
+     *
+     * @type {Function}
+     */
     this.fcOut = fcOut;
+    /**
+     *
+     * @param from the abString for displaying the play outcome in the currentAB eventBox
+     * @param outAt Where to record the outAt. i.e. the eventBox object of the runner who recorded the out
+     */
     function fcOut(from,outAt)
     {
         this.recordOut(outAt);
@@ -523,6 +625,10 @@ function ScoreCard(canvas,overlay,batters)
     }
 
     this.preAB = preAB;
+    /**
+     * Parse preAB events such as stolen bases, caught stealing, wild pitches, pick offs,
+     * @param eventString the event as a string that is decoded and determines the outcome of the play
+     */
     function preAB(eventString)
     {
         //All Pre at-bat events
@@ -667,6 +773,10 @@ function ScoreCard(canvas,overlay,batters)
     }
 
     this.processAB = processAB;
+    /**
+     * Process hits, walks, hit by pitch events
+     * @param abString the string to decode into the eventBox
+     */
     function processAB(abString)
     {
         // At Bat Events
@@ -733,6 +843,11 @@ function ScoreCard(canvas,overlay,batters)
     }// end processAB
 
     this.postAB = postAB;
+    /**
+     * This will process postAB events such as runners advancing the correct numbers of bases
+     * currently disabled
+     * @param abString the abString to decode
+     */
     function postAB(abString)
     {
 
@@ -883,8 +998,10 @@ function ScoreCard(canvas,overlay,batters)
     this.startInning();
 }
 /**
- *
- * @param canvas
+ * The LineScore is the total of runs and hits at the bottom of the scorecard
+ * @param canvas the canvas to draw the linescore on
+ * @param x coordinate of this LineScore
+ * @param y coordinate of this LineScore
  * @constructor
  */
 function LineScore(canvas,x,y)
@@ -894,6 +1011,11 @@ function LineScore(canvas,x,y)
     this.y = y;
 
     this.draw = draw;
+    /**
+     * Draw this games LineScore
+     * @param hits the total hits
+     * @param runs the total runs
+     */
     function draw(hits,runs)
     {
         //whitewash score box
@@ -911,10 +1033,17 @@ function LineScore(canvas,x,y)
     }
 }
 
+/**
+ * The ControlArea of this ScoreCard
+ * @param scoreCard The ScoreCard this ControlArea is controlling
+ * @constructor
+ */
 function ControlArea(scoreCard)
 {
+    //The tab Group at the top of the App
     $( "#tabs" ).tabs();
 
+    // All of the classes for menu buttons and options used for hiding and showing menuOptions
     this.brOptions = $('.brOptions');
     this.fbOptions = $('.fbOptions');
     this.sbOptions = $('.sbOptions');
@@ -931,6 +1060,7 @@ function ControlArea(scoreCard)
     this.dsOptions = $('.dsOptions');
     this.tsOptions = $('.tsOptions');
 
+    //The Dialog to display location specifiers for Fly Ball outs.
     var foDialog = $( "#fly-out-dialog" ).dialog({
         autoOpen: false,
         height: 300,
@@ -938,6 +1068,7 @@ function ControlArea(scoreCard)
         modal: true
     });
 
+    //The Dialog to display location specifiers for Ground Ball outs.
     var goDialog = $( "#ground-out-dialog" ).dialog({
         autoOpen: false,
         height: 300,
@@ -945,6 +1076,7 @@ function ControlArea(scoreCard)
         modal: true
     });
 
+    //The Dialog to display location specifiers for infield pop outs.
     var poDialog = $( "#pop-out-dialog" ).dialog({
         autoOpen: false,
         height: 300,
@@ -952,6 +1084,7 @@ function ControlArea(scoreCard)
         modal: true
     });
 
+    //The Dialog to display location specifiers for fielders choice outs.
     var fcoDialog = $( "#fielders-choice-out-dialog" ).dialog({
         autoOpen: false,
         height: 300,
@@ -959,19 +1092,7 @@ function ControlArea(scoreCard)
         modal: true
     });
 
-    var dpDialog = $( "#double-play-dialog" ).dialog({
-        autoOpen: false,
-        height: 300,
-        width: 350,
-        modal: true
-    });
-
-    var tpDialog = $( "#triple-play-dialog" ).dialog({
-        autoOpen: false,
-        height: 300,
-        width: 350,
-        modal: true
-    });
+    //The Dialog used for choosing post ab runners advancing
     $( "#advance-runner-dialog-form" ).dialog({
         autoOpen: false,
         height: 300,
@@ -988,6 +1109,7 @@ function ControlArea(scoreCard)
         }
     });
 
+    //create click functions for unique buttons such as double and triple plays
     $( "#1H")
         .button()
         .click(function(){
@@ -1241,7 +1363,12 @@ function ControlArea(scoreCard)
         heightStyle: "content"
     });
 
+    //Toggle Method for menu items when a runner is on base
     this.toggleBaseRunningEvents = toggleBaseRunningEvents;
+    /**
+     * Toggle for On base Menu Options
+     * @param option set to hide to hide menu options
+     */
     function toggleBaseRunningEvents(option)
     {
         this.accordion.accordion( "option", "active", 0 );
@@ -1258,6 +1385,10 @@ function ControlArea(scoreCard)
     }
 
     this.toggleTriplePlayEvents = toggleTriplePlayEvents;
+    /**
+     * Toggle for Triple play menu
+     * @param option set to hide to hide menu options
+     */
     function toggleTriplePlayEvents(option)
     {
         this.accordion.accordion( "option", "active", 0 );
@@ -1271,7 +1402,12 @@ function ControlArea(scoreCard)
         }
     }
 
+
     this.toggleDoublePlayEvents = toggleDoublePlayEvents;
+    /**
+     * Toggle for Double play menu
+     * @param option set option to hide to hide double play options
+     */
     function toggleDoublePlayEvents(option)
     {
         this.accordion.accordion( "option", "active", 0 );
@@ -1285,6 +1421,10 @@ function ControlArea(scoreCard)
         }
     }
     this.hideAll = hideAll;
+    /**
+     * Used to Hide all advanced menu options
+     * Used when a new inning is started or there are no runners ok base
+     */
     function hideAll()
     {
         this.toggleBaseRunningEvents("hide");
@@ -1308,10 +1448,10 @@ function ControlArea(scoreCard)
 }
 
 /**
- *
- * @param name
- * @param number
- * @param position
+ * The Player class
+ * @param name Players Name
+ * @param number Players Number
+ * @param position Players Position
  * @constructor
  */
 function Player(name,number,position)
@@ -1322,7 +1462,7 @@ function Player(name,number,position)
 }
 
 /**
- *
+ * PlayerBox Class this is the graphical element for a player box that exists in the Lineup card
  * @param canvas - the canvas this player box is drawn on
  * @param player - the player associated with this player box
  * @param x - x-location
@@ -1383,12 +1523,12 @@ function PlayerBox(canvas,player,x,y)
 }
 
 /**
- *
- * @param canvas
- * @param playerBox
- * @param abNum
- * @param x
- * @param y
+ * The EventBox class
+ * @param canvas this event box is drawn on
+ * @param playerBox PlayerBox associated with this event box
+ * @param abNum the At-Bat number
+ * @param x coordinate of this EventBox
+ * @param y coordinate of this EVentBox
  * @constructor
  */
 function EventBox(canvas,playerBox,abNum,x,y)
@@ -1424,21 +1564,21 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.stroke();
     }
 
-    /**
-     * Used to enlarge this EventBox
-     * @type {Function}
-     */
     this.magnify = magnify;
+    /**
+     *  not currently used but planned to use for scaling up a playbox
+     */
     function magnify()
     {
         BOX_W_H = 300;
     }
 
-    /**
-     * Draw this EventBox as the start of a new inning
-     * @type {Function}
-     */
+
     this.startInning = startInning;
+    /**
+     * Draw the new inning box in this EventBox
+     * @param inning the inning number
+     */
     function startInning(inning)
     {
         this.ctx.strokeRect(this.x+(BOX_W_H *.35),this.y,(BOX_W_H *.3),(BOX_W_H *.25));
@@ -1462,11 +1602,11 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.font = font;
     }
 
-    /**
-     * Draw the run scored dot on this EventBox
-     * @type {Function}
-     */
+
     this.runScored = runScored;
+    /**
+     * Draw the run scored dot in this EventBox
+     */
     function runScored()
     {
         var originalFill = this.ctx.fillStyle;
@@ -1478,6 +1618,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.onFirst = onFirst;
+    /**
+     * Draw the runner on first in this EventBox
+     * @param number the number of the player on first
+     */
     function onFirst(number)
     {
         this.ctx.fillStyle = 'white';
@@ -1487,6 +1631,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.onSecond = onSecond;
+    /**
+     * Draw the runner on second in this EventBox
+     * @param number the number of the player on second
+     */
     function onSecond(number)
     {
         this.ctx.fillStyle = 'white';
@@ -1496,6 +1644,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.onThird = onThird;
+    /**
+     * Draw the runner on third in this EventBox
+     * @param number the number of the player on third
+     */
     function onThird(number)
     {
         this.ctx.fillStyle = 'white';
@@ -1505,6 +1657,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.rbiFirst = rbiFirst;
+    /**
+     * Draw the RBI circle around the runner on first in this EventBox
+     */
     function rbiFirst()
     {
         this.ctx.beginPath();
@@ -1513,6 +1668,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.rbiSecond = rbiSecond;
+    /**
+     * Draw the RBI circle around the runner on second in this EventBox
+     */
     function rbiSecond()
     {
         this.ctx.beginPath();
@@ -1521,6 +1679,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.rbiThird = rbiThird;
+    /**
+     * Draw the RBI circle around the runner on third in this EventBox
+     */
     function rbiThird()
     {
         this.ctx.beginPath();
@@ -1529,6 +1690,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.rbiHome = rbiHome;
+    /**
+     * Used to show an RBI around the hitter of a home run
+     */
     function rbiHome(number)
     {
         this.ctx.fillText(number,this.x+(BOX_W_H *.42),this.y+(BOX_W_H *.90));
@@ -1538,6 +1702,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.noRBIFirst = noRBIFirst;
+    /**
+     * Draw the red NoRBI circle around the runner on first in this EventBox
+     */
     function noRBIFirst()
     {
         this.ctx.beginPath();
@@ -1548,6 +1715,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.noRBISecond = noRBISecond;
+    /**
+     * Draw the red NoRBI circle around the runner on second in this EventBox
+     */
     function noRBISecond()
     {
         this.ctx.beginPath();
@@ -1558,6 +1728,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.noRBIThird = noRBIThird;
+    /**
+     * Draw the red NoRBI circle around the runner on third in this EventBox
+     */
     function noRBIThird()
     {
         this.ctx.beginPath();
@@ -1568,6 +1741,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.noRBIHome = noRBIHome;
+    /**
+     * Draw the red NoRBI circle around the batter
+     * Not sure when I will use this maybe Error on a triple that gets the batter home?
+     */
     function noRBIHome(number)
     {
         this.ctx.fillText(number,this.x+(BOX_W_H *.42),this.y+(BOX_W_H *.90));
@@ -1579,6 +1756,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.pickOffFirst = pickOffFirst;
+    /**
+     * Draw the Red Line through the runnner on first
+     */
     function pickOffFirst()
     {
         this.ctx.strokeStyle = 'red';
@@ -1590,6 +1770,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.pickOffSecond = pickOffSecond;
+    /**
+     * Draw the Red Line through the runnner on second
+     */
     function pickOffSecond()
     {
         this.ctx.strokeStyle = 'red';
@@ -1601,6 +1784,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.pickOffThird = pickOffThird;
+    /**
+     * Draw the Red Line through the runnner on third
+     */
     function pickOffThird()
     {
         this.ctx.strokeStyle = 'red';
@@ -1612,6 +1798,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.toSecond = toSecond;
+    /**
+     * Draw a thicker Line to second for runner advancement
+     * @param how the type of play that moved the runner up such as a SB
+     */
     function toSecond(how)
     {
         //make line slightly bigger
@@ -1627,6 +1817,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.toThird = toThird;
+    /**
+     * Draw a thicker Line to third for runner advancement
+     * @param how the type of play that moved the runner up such as a SB
+     */
     function toThird(how)
     {
         //make line slightly bigger
@@ -1642,6 +1836,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.toHome = toHome;
+    /**
+     * Draw a thicker Line to home for runner advancement
+     * @param how the type of play that moved the runner up such as a SB
+     */
     function toHome(how)
     {
         //make line slightly bigger
@@ -1657,6 +1855,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.outToSecond = outToSecond;
+    /**
+     * Draw the out to second line
+     * @param how - the type of play that put this runner out such as FC or CS
+     */
     function outToSecond(how)
     {
         //make line slightly bigger
@@ -1676,6 +1878,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.outToThird = outToThird;
+    /**
+     * Draw the out to third line
+     * @param how - the type of play that put this runner out such as FC or CS
+     */
     function outToThird(how)
     {
         //make line slightly bigger
@@ -1695,6 +1901,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.outToHome = outToHome;
+    /**
+     * Draw the out to home
+     * @param how - the type of play that put this runner out such as FC or CS
+     */
     function outToHome(how)
     {
         //make line slightly bigger
@@ -1714,6 +1924,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.endInning = endInning;
+    /**
+     * Draw the end of inning symbol on this eventBox
+     */
     function endInning()
     {
         this.ctx.beginPath();
@@ -1723,7 +1936,22 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.fill();
     }
 
+    this.hit= hit;
+    /**
+     * Called the hit function but should probably be renamed Event
+     * Draws the event label for this ab such as S,D,T,H,W
+     * @param type - The type of event that ended this batters at Bat
+     */
+    function hit(type)
+    {
+        this.hitString += type;
+        this.ctx.fillText(this.hitString,this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.90));
+    }
+
     this.hitLeft = hitLeft;
+    /**
+     * Not used yet but will be used for hit direction line
+     */
     function hitLeft()
     {
         //make line slightly bigger
@@ -1737,14 +1965,10 @@ function EventBox(canvas,playerBox,abNum,x,y)
         this.ctx.lineWidth = 1;
     }
 
-    this.hit= hit;
-    function hit(type)
-    {
-        this.hitString += type;
-        this.ctx.fillText(this.hitString,this.x+(BOX_W_H *.05),this.y+(BOX_W_H *.90));
-    }
-
     this.hitRight = hitRight;
+    /**
+     * Not used yet but will be used for hit direction indicator
+     */
     function hitRight()
     {
         this.ctx.lineWidth = 2;
@@ -1757,6 +1981,9 @@ function EventBox(canvas,playerBox,abNum,x,y)
     }
 
     this.hitCenter = hitCenter;
+    /**
+     * Not used yet but will be used for hit direction indicator
+     */
     function hitCenter()
     {
         this.ctx.lineWidth = 2;
