@@ -15,7 +15,7 @@ function ScoreCard(canvas,overlay,batters)
     this.canvas = canvas;
     this.overlay = overlay;
     this.canvas[0].width = 1000;
-    this.canvas[0].height = 500;
+    this.canvas[0].height = 550;
     this.controlArea = null;
     /*
     not sure I am going to do anything with the overlay
@@ -27,6 +27,8 @@ function ScoreCard(canvas,overlay,batters)
 
     this.abNum = 1;
     this.inning = 1;
+    this.runs = 0;
+    this.hits = 0;
     this.outs = 0;
     this.onDeck = null;
     this.currentAB = null;
@@ -45,7 +47,7 @@ function ScoreCard(canvas,overlay,batters)
     this.y = 0;
 
     //draw score card header
-    drawLineUpCardHeader(this.canvas[0],this.overlay[0]);
+    drawLineUpCardHeader(this.canvas[0]);
     drawHeading(this.canvas[0],this.x,this.y);
     this.y = 25;
     //draw player boxes
@@ -56,6 +58,8 @@ function ScoreCard(canvas,overlay,batters)
         this.playerBoxes[i].draw();
         this.y += 50;
     }
+    this.lineScore = new LineScore(this.canvas[0],0,this.y);
+    this.lineScore.draw(this.hits,this.runs);
     this.y=25;
     for (var i = 0; i < this.eventBoxes[0].length; i++)
     {
@@ -156,6 +160,10 @@ function ScoreCard(canvas,overlay,batters)
         return (this.onFirst!=null || this.onSecond!=null || this.onThird!=null);
     }
 
+    /**
+     * Function to make sure only needed menu items are visible.
+     * @type {Function}
+     */
     this.disableMenuOptions = disableMenuOptions;
     function disableMenuOptions()
     {
@@ -163,23 +171,16 @@ function ScoreCard(canvas,overlay,batters)
         if(!this.runnerOn())
         {
             this.controlArea.hideAll();
+            //this.controlArea.toggleBaseRunningEvents();
         }
         else
         {
-            //if brOptions is are not visible show them otherwise do nothing
-            //this is intended to deal with menus redrawing when they do not need to.
-            if(!this.controlArea.brOptions.is(":visible"))
-            {
-                this.controlArea.brOptions.show();
-            }
 
+            this.controlArea.toggleBaseRunningEvents();
             // check to see if a runner is on 1st if no runner is on disable options that deal with 1st base
             if(this.onFirst!=null)
             {
-                if(!this.controlArea.fbOptions.is(":visible"))
-                {
-                    this.controlArea.fbOptions.show();
-                }
+                this.controlArea.fbOptions.show();
             }
             else
             {
@@ -189,10 +190,7 @@ function ScoreCard(canvas,overlay,batters)
             // check to see if a runner is on 2nd if no runner is on disable options that deal with 2nd base
             if(this.onSecond!=null)
             {
-                if(!this.controlArea.sbOptions.is(":visible"))
-                {
-                    this.controlArea.sbOptions.show();
-                }
+                this.controlArea.sbOptions.show();
             }
             else
             {
@@ -202,89 +200,106 @@ function ScoreCard(canvas,overlay,batters)
             // check to see if a runner is on 3rd if no runner is on disable options that deal with 3rd base
             if(this.onThird!=null)
             {
-                if(!this.controlArea.tbOptions.is(":visible"))
-                {
-                    this.controlArea.tbOptions.show();
-                }
+                this.controlArea.tbOptions.show();
             }
             else
             {
                 this.controlArea.tbOptions.hide();
             }
 
+            if(this.twoRunnersOn())
+            {
+                this.controlArea.dsOptions.show();
+                if(this.firstAndSecond())
+                {
+                    $('.steal2').hide();
+                }
+                else if(this.secondAndThird())
+                {
+                    console.log("wtf");
+                    $('.steal3').hide();
+                }
+            }
+            else
+            {
+                this.controlArea.dsOptions.hide();
+            }
+
+            if(this.areBasesLoaded())
+            {
+                this.controlArea.tsOptions.show();
+                $('.steal2').hide();
+                $('.steal3').hide();
+            }
+            else
+            {
+                this.controlArea.tsOptions.hide();
+            }
             // check for triple play conditions
             if(this.outs==0 && this.twoRunnersOn())
             {
-                if(!this.controlArea.tpOptions.is(":visible"))
-                {
-                    this.controlArea.tpOptions.show();
-                }
-
-                if(this.firstAndSecond())
-                {
-                    this.controlArea.tp123Options.show();
-    console.log("First And Second");
-                }
-                else
-                {
-                    this.controlArea.tp123Options.hide();
-                }
-
-                if(this.firstAndThird())
-                {
-                    this.controlArea.tp12HOptions.show();
-    console.log("On Corners");
-                }
-                else
-                {
-                    this.controlArea.tp12HOptions.hide();
-                }
-
-                if(this.secondAndThird())
-                {
-                    this.controlArea.tp13HOptions.show();
-    console.log("Second and Third");
-                }
-                else
-                {
-                    this.controlArea.tp13HOptions.hide();
-                }
-
+                this.controlArea.toggleTriplePlayEvents();
                 if(this.areBasesLoaded())
                 {
+                    this.controlArea.tp123Options.show();
+                    this.controlArea.tp12HOptions.show();
+                    this.controlArea.tp13HOptions.show();
                     this.controlArea.tp23HOptions.show();
-    console.log("Loaded");
                 }
-                else
+                else if(this.firstAndSecond())
                 {
+                    this.controlArea.tp123Options.show();
+                    this.controlArea.tp12HOptions.hide();
+                    this.controlArea.tp13HOptions.hide();
+                    this.controlArea.tp23HOptions.hide();
+                }
+                else if(this.firstAndThird())
+                {
+                    this.controlArea.tp123Options.hide();
+                    this.controlArea.tp12HOptions.show();
+                    this.controlArea.tp13HOptions.hide();
+                    this.controlArea.tp23HOptions.hide();
+                }
+                else if(this.secondAndThird())
+                {
+                    this.controlArea.tp123Options.hide();
+                    this.controlArea.tp12HOptions.hide();
+                    this.controlArea.tp13HOptions.show();
                     this.controlArea.tp23HOptions.hide();
                 }
             }
             else
             {
-                this.controlArea.tpOptions.hide();
+                this.controlArea.toggleTriplePlayEvents("hide");
             }
 
             if(this.outs < 2 && this.runnerOn())
             {
-                if(!this.controlArea.dpOptions.is(":visible"))
+                this.controlArea.toggleDoublePlayEvents();
+                if(this.areBasesLoaded())
                 {
-                    this.controlArea.dpOptions.show();
-
+                    this.controlArea.dp21Options.show();
+                    this.controlArea.dp31Options.show();
+                    this.controlArea.dp32Options.show();
                 }
-
+                else if(this.firstAndSecond())
+                {
+                    this.controlArea.dp21Options.show();
+                }
+                else if(this.secondAndThird())
+                {
+                    this.controlArea.dp32Options.show();
+                }
+                else if(this.onCorners())
+                {
+                    this.controlArea.dp31Options.show();
+                }
             }
             else
             {
-                this.controlArea.dpOptions.hide();
+                this.controlArea.toggleDoublePlayEvents("hide");
             }
         }
-
-        console.log("tp123="+this.controlArea.tp123Options.is(":visible"));
-        console.log("tp12H="+this.controlArea.tp12HOptions.is(":visible"));
-        console.log("tp13H="+this.controlArea.tp13HOptions.is(":visible"));
-        console.log("tp23H="+this.controlArea.tp23HOptions.is(":visible"));
-
     }
 
     this.firstAndSecond = firstAndSecond
@@ -343,7 +358,7 @@ function ScoreCard(canvas,overlay,batters)
             this.endInning();
             this.startInning();
         }
-
+        this.lineScore.draw(this.hits,this.runs);
         this.disableMenuOptions();
     }
 
@@ -360,6 +375,7 @@ function ScoreCard(canvas,overlay,batters)
         if(this.onThird!=null)
         {
             this.onThird.runScored();
+            this.runs++;
             this.currentAB.rbiThird();
             this.onThird = null;
         }
@@ -382,6 +398,7 @@ function ScoreCard(canvas,overlay,batters)
         if(this.onThird!=null)
         {
             this.onThird.runScored();
+            this.runs++;
             this.currentAB.toHome(how);
             this.currentAB.noRBIThird();
             this.onThird = null;
@@ -407,12 +424,14 @@ function ScoreCard(canvas,overlay,batters)
         if(this.onThird!=null)
         {
             this.onThird.runScored();
+            this.runs++;
             this.currentAB.rbiThird();
             this.onThird = null;
         }
         if(this.onSecond!=null)
         {
             this.onSecond.runScored();
+            this.runs++;
             this.currentAB.rbiSecond();
             this.onSecond = null;
         }
@@ -430,18 +449,21 @@ function ScoreCard(canvas,overlay,batters)
         if(this.onThird!=null)
         {
             this.onThird.runScored();
+            this.runs++;
             this.currentAB.rbiThird();
             this.onThird = null;
         }
         if(this.onSecond!=null)
         {
             this.onSecond.runScored();
+            this.runs++;
             this.currentAB.rbiSecond();
             this.onSecond = null;
         }
         if(this.onFirst!=null)
         {
             this.onFirst.runScored();
+            this.runs++;
             this.currentAB.rbiFirst();
             this.onFirst = null;
         }
@@ -454,12 +476,14 @@ function ScoreCard(canvas,overlay,batters)
         if(this.onThird!=null)
         {
             this.onThird.runScored();
+            this.runs++;
             this.currentAB.noRBIThird();
             this.onThird = null;
         }
         if(this.onSecond!=null)
         {
             this.onSecond.runScored();
+            this.runs++;
             this.currentAB.noRBISecond();
             this.onSecond = null;
         }
@@ -537,6 +561,7 @@ function ScoreCard(canvas,overlay,batters)
                     this.currentAB.toHome(eventString.substring(0,2));
                     this.currentAB.noRBIThird()
                     this.onThird.runScored();
+                    this.runs++;
                     this.onThird = null;
                 }
                 else
@@ -649,22 +674,27 @@ function ScoreCard(canvas,overlay,batters)
         {
             // Single
             case 'S':
+                this.hits++;
                 this.advanceAllOneRBI();
                 this.onFirst = this.currentAB;
                 break;
             // Double
             case 'D':
+                this.hits++;
                 this.advanceAllTwoRBI();
                 this.onSecond = this.currentAB;
                 break;
             // Triple
             case 'T':
+                this.hits++;
                 this.advanceAllThreeRBI();
                 this.onThird = this.currentAB;
                 break;
             // Home Run
             case 'H':
+                this.hits++;
                 this.currentAB.runScored();
+                this.runs++;
                 this.currentAB.rbiHome(this.currentAB.playerBox.player.number);
                 this.advanceAllThreeRBI();
                 break;
@@ -760,6 +790,7 @@ function ScoreCard(canvas,overlay,batters)
                 if(this.onFirst!=null)
                 {
                     this.onFirst.runScored();
+                    this.runs++;
                     this.currentAB.rbiFirst();
                     this.onFirst = null;
                 }
@@ -798,6 +829,7 @@ function ScoreCard(canvas,overlay,batters)
                 if(this.onSecond!=null)
                 {
                     this.onSecond.runScored();
+                    this.runs++;
                     this.onDeck.rbiSecond();
                     this.onSecond = null;
                 }
@@ -822,6 +854,7 @@ function ScoreCard(canvas,overlay,batters)
                 if(this.onThird!=null)
                 {
                     this.onThird.runScored();
+                    this.runs++;
                     this.currentAB.rbiThird();
                     this.onThird = null;
                     this.onDeck.onThird('');
@@ -854,9 +887,28 @@ function ScoreCard(canvas,overlay,batters)
  * @param canvas
  * @constructor
  */
-function LineScore(canvas)
+function LineScore(canvas,x,y)
 {
+    this.ctx = canvas.getContext('2d');
+    this.x = x;
+    this.y = y;
 
+    this.draw = draw;
+    function draw(hits,runs)
+    {
+        //whitewash score box
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(this.x,this.y,120,50);
+        this.ctx.fillStyle = 'black';
+
+        this.ctx.strokeRect(this.x,this.y,120,25);
+        var originalFont = this.ctx.font;
+        this.ctx.font = 25/2+'px Sans-Serif';
+        this.ctx.fillText  ("Hits: "+hits, this.x+(15/2.5), this.y+(25/1.33));
+        this.ctx.strokeRect(this.x,this.y+25,120,25);
+        this.ctx.fillText  ("Runs: "+runs, this.x+(15/2.5), this.y+25+(25/1.33));
+        this.ctx.font = originalFont;
+    }
 }
 
 function ControlArea(scoreCard)
@@ -872,10 +924,12 @@ function ControlArea(scoreCard)
     this.dp21Options = $('.dp21Options');
     this.dp31Options = $('.dp31Options');
     this.dp32Options = $('.dp32Options');
-    this.tp123Options = $('tp123Options');
-    this.tp12HOptions = $('tp12HOptions');
-    this.tp13HOptions = $('tp13HOptions');
-    this.tp23HOptions = $('tp23HOptions');
+    this.tp123Options = $('.tp123Options');
+    this.tp12HOptions = $('.tp12HOptions');
+    this.tp13HOptions = $('.tp13HOptions');
+    this.tp23HOptions = $('.tp23HOptions');
+    this.dsOptions = $('.dsOptions');
+    this.tsOptions = $('.tsOptions');
 
     var foDialog = $( "#fly-out-dialog" ).dialog({
         autoOpen: false,
@@ -1099,11 +1153,12 @@ function ControlArea(scoreCard)
         .button()
         .click(function() {
             $( "#double-play-dialog" ).dialog( "open" );
+            scoreCard.disableMenuOptions();
         });
     $( ".triple-play")
         .button()
         .click(function() {
-            $( "#triple-play-dialog" ).dialog( "open" );
+            var dialog = $( "#triple-play-dialog" ).dialog( "open" );
         });
     $( ".fly-out")
         .button()
@@ -1181,15 +1236,60 @@ function ControlArea(scoreCard)
         .click(function() {
             $( "#advance-runner-dialog-form" ).dialog( "open" );
         });
-    $( "#accordion" ).accordion({
+    this.accordion = $( "#accordion" ).accordion({
         collapsible: true,
         heightStyle: "content"
     });
 
+    this.toggleBaseRunningEvents = toggleBaseRunningEvents;
+    function toggleBaseRunningEvents(option)
+    {
+        this.accordion.accordion( "option", "active", 0 );
+        if(option == "hide")
+        {
+            this.brOptions.hide();
+            this.accordion.find( ".ui-accordion-header:eq(2)" ).hide();
+        }
+        else
+        {
+            this.brOptions.show();
+            this.accordion.find( ".ui-accordion-header:eq(2)" ).show();
+        }
+    }
+
+    this.toggleTriplePlayEvents = toggleTriplePlayEvents;
+    function toggleTriplePlayEvents(option)
+    {
+        this.accordion.accordion( "option", "active", 0 );
+        if(option == "hide")
+        {
+            this.accordion.find( ".ui-accordion-header:eq(4)" ).hide();
+        }
+        else
+        {
+            this.accordion.find( ".ui-accordion-header:eq(4)" ).show();
+        }
+    }
+
+    this.toggleDoublePlayEvents = toggleDoublePlayEvents;
+    function toggleDoublePlayEvents(option)
+    {
+        this.accordion.accordion( "option", "active", 0 );
+        if(option == "hide")
+        {
+            this.accordion.find( ".ui-accordion-header:eq(3)" ).hide();
+        }
+        else
+        {
+            this.accordion.find( ".ui-accordion-header:eq(3)" ).show();
+        }
+    }
     this.hideAll = hideAll;
     function hideAll()
     {
-        this.brOptions.hide();
+        this.toggleBaseRunningEvents("hide");
+        this.toggleDoublePlayEvents("hide");
+        this.toggleTriplePlayEvents("hide");
         this.fbOptions.hide();
         this.sbOptions.hide();
         this.tbOptions.hide();

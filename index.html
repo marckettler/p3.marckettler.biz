@@ -35,8 +35,13 @@
         <div id="instructions">
             <p>
                 Currently ScoreCard.js only implements simple baseball game situations.<br>
-                Runners on base will advance the same number of bases as the current batter.
-                If a runner is on 1st and the batter hits a double the runner will only advance 2 bases to 3rd.
+                Runners on base will advance the same number of bases as the current batter.<br>
+                <ol>
+                    <li>Single - 1 Base</li>
+                    <li>Double - 2 Base</li>
+                    <li>Triple - 3 Base</li>
+                    <li>Home Run - 4 Base</li>
+                </ol>
             </p>
         </div>
         <div id="scorecard">
@@ -63,18 +68,16 @@
                         <button type="button" class="pop-out">Pop Up</button>
                         <button type="button" class="fielders-choice-out brOptions">Fielder's Choice</button>
                         <button type="button" class="next-ab" onclick="scoreCard.processAB('K')">Strikeout</button>
-                        <button type="button" class="double-play dpOptions">Double Play</button>
-                        <button type="button" class="triple-play tpOptions">Triple Play</button>
                         <button type="button" class="next-ab brOptions" onclick="scoreCard.processAB('SF')">Sac Fly</button>
                         <button type="button" class="next-ab brOptions" onclick="scoreCard.processAB('SH')">Sac Hit/Bunt</button>
                     </div>
-                    <h3 class="brOptions">Base Running Events</h3>
-                    <div class="brOptions">
-                        <button type="button" class="on-base fbOptions" onclick="scoreCard.preAB('SB12')">Steal 2nd</button>
-                        <button type="button" class="on-base sbOptions" onclick="scoreCard.preAB('SB23')">Steal 3rd</button>
+                    <h3>Base Running Events</h3>
+                    <div>
+                        <button type="button" class="on-base fbOptions steal2" onclick="scoreCard.preAB('SB12')">Steal 2nd</button>
+                        <button type="button" class="on-base sbOptions steal3" onclick="scoreCard.preAB('SB23')">Steal 3rd</button>
                         <button type="button" class="on-base tbOptions" onclick="scoreCard.preAB('SB3H')">Steal Home</button>
-                        <button type="button" class="on-base" onclick="scoreCard.preAB('SBDS')">Double Steal</button>
-                        <button type="button" class="on-base" onclick="scoreCard.preAB('SBTS')">Triple Steal</button>
+                        <button type="button" class="on-base dsOptions" onclick="scoreCard.preAB('SBDS')">Double Steal</button>
+                        <button type="button" class="on-base tsOptions" onclick="scoreCard.preAB('SBTS')">Triple Steal</button>
                         <button type="button" class="on-base fbOptions" onclick="scoreCard.preAB('CS12')">CS 2nd</button>
                         <button type="button" class="on-base sbOptions" onclick="scoreCard.preAB('CS23')">CS 3rd</button>
                         <button type="button" class="on-base tbOptions" onclick="scoreCard.preAB('CS3H')">CS Home</button>
@@ -83,8 +86,25 @@
                         <button type="button" class="on-base tbOptions" onclick="scoreCard.preAB('PO3')">PO 3rd</button>
                         <button type="button" class="on-base" onclick="scoreCard.preAB('BK')">Balk</button>
                     </div>
+                    <h3>Double Play</h3>
+                    <div>
+                        <button type="button" id="1H" class="fbOptions">1st & 2nd</button>
+                        <button type="button" id="2H" class="sbOptions">1st & 3rd</button>
+                        <button type="button" id="3H" class="tbOptions">1st & Home</button>
+                        <button type="button" id="21" class="dp21Options">2nd & 3rd</button>
+                        <button type="button" id="31" class="dp31Options">2nd & Home</button>
+                        <button type="button" id="32dp" class="dp32Options">3rd & Home</button>
+                    </div>
+                    <h3>Triple Play</h3>
+                    <div>
+                        <button type="button" id="123" class="tp123Options">1st & 2nd & 3rd</button>
+                        <button type="button" id="12H" class="tp12HOptions">1st & 2nd & Home</button>
+                        <button type="button" id="13H" class="tp13HOptions">1st & 3rd & Home</button>
+                        <button type="button" id="23H" class="tp23HOptions">2nd & 3rd & Home</button>
+                    </div>
                 </div>
             </div>
+
             <div id="advance-runner-dialog-form" title="Advance Runners">
                 <div>
                     <button type="button" id="1bH">1-2</button>
@@ -99,24 +119,6 @@
                     <button type="button" onclick="scoreCard.postAB('2xH')">2xH</button>
                     <button type="button" onclick="scoreCard.postAB('3-H')">3-H</button>
                     <button type="button" onclick="scoreCard.postAB('3xH')">3xH</button>
-                </div>
-            </div>
-            <div id="double-play-dialog" title="Outs At">
-                <div>
-                    <button type="button" id="1H" class="fbOptions">1st & 2nd</button>
-                    <button type="button" id="2H" class="sbOptions">1st & 3rd</button>
-                    <button type="button" id="3H" class="tbOptions">1st & Home</button>
-                    <button type="button" id="21" class="dp21Options">2nd & 3rd</button>
-                    <button type="button" id="31" class="dp31Options">2nd & Home</button>
-                    <button type="button" id="32dp" class="dp32Options">3rd & Home</button>
-                </div>
-            </div>
-            <div id="triple-play-dialog" title="Outs At">
-                <div>
-                    <button type="button" id="123" class="tp123Options">1st & 2nd & 3rd</button>
-                    <button type="button" id="12H" class="tp12HOptions">1st & 2nd & Home</button>
-                    <button type="button" id="13H" class="tp13HOptions">1st & 3rd & Home</button>
-                    <button type="button" id="23H" class="tp23HOptions">2nd & 3rd & Home</button>
                 </div>
             </div>
             <div id="ground-out-dialog" title="Out from">
