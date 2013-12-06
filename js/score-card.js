@@ -150,8 +150,8 @@ function ScoreCard(canvas,overlay,batters)
     {
         this.currentAB.startInning(this.inning);
     }
-    this.runnersOn = runnersOn;
-    function runnersOn()
+    this.runnerOn = runnerOn;
+    function runnerOn()
     {
         return (this.onFirst!=null || this.onSecond!=null || this.onThird!=null);
     }
@@ -159,23 +159,21 @@ function ScoreCard(canvas,overlay,batters)
     this.disableMenuOptions = disableMenuOptions;
     function disableMenuOptions()
     {
-        //if there are no runners on hide base running options
-        if(!this.runnersOn())
+        //if there are no runners on hide all menu items that deal with base runners
+        if(!this.runnerOn())
         {
-            this.controlArea.brOptions.hide();
-            this.controlArea.fbOptions.hide();
-            this.controlArea.sbOptions.hide();
-            this.controlArea.tbOptions.hide();
-            this.controlArea.dpOptions.hide();
-            this.controlArea.dpOptions.hide();
+            this.controlArea.hideAll();
         }
         else
         {
+            //if brOptions is are not visible show them otherwise do nothing
+            //this is intended to deal with menus redrawing when they do not need to.
             if(!this.controlArea.brOptions.is(":visible"))
             {
                 this.controlArea.brOptions.show();
             }
 
+            // check to see if a runner is on 1st if no runner is on disable options that deal with 1st base
             if(this.onFirst!=null)
             {
                 if(!this.controlArea.fbOptions.is(":visible"))
@@ -188,6 +186,7 @@ function ScoreCard(canvas,overlay,batters)
                 this.controlArea.fbOptions.hide();
             }
 
+            // check to see if a runner is on 2nd if no runner is on disable options that deal with 2nd base
             if(this.onSecond!=null)
             {
                 if(!this.controlArea.sbOptions.is(":visible"))
@@ -200,6 +199,7 @@ function ScoreCard(canvas,overlay,batters)
                 this.controlArea.sbOptions.hide();
             }
 
+            // check to see if a runner is on 3rd if no runner is on disable options that deal with 3rd base
             if(this.onThird!=null)
             {
                 if(!this.controlArea.tbOptions.is(":visible"))
@@ -212,11 +212,52 @@ function ScoreCard(canvas,overlay,batters)
                 this.controlArea.tbOptions.hide();
             }
 
+            // check for triple play conditions
             if(this.outs==0 && this.twoRunnersOn())
             {
                 if(!this.controlArea.tpOptions.is(":visible"))
                 {
                     this.controlArea.tpOptions.show();
+                }
+
+                if(this.firstAndSecond())
+                {
+                    this.controlArea.tp123Options.show();
+    console.log("First And Second");
+                }
+                else
+                {
+                    this.controlArea.tp123Options.hide();
+                }
+
+                if(this.firstAndThird())
+                {
+                    this.controlArea.tp12HOptions.show();
+    console.log("On Corners");
+                }
+                else
+                {
+                    this.controlArea.tp12HOptions.hide();
+                }
+
+                if(this.secondAndThird())
+                {
+                    this.controlArea.tp13HOptions.show();
+    console.log("Second and Third");
+                }
+                else
+                {
+                    this.controlArea.tp13HOptions.hide();
+                }
+
+                if(this.areBasesLoaded())
+                {
+                    this.controlArea.tp23HOptions.show();
+    console.log("Loaded");
+                }
+                else
+                {
+                    this.controlArea.tp23HOptions.hide();
                 }
             }
             else
@@ -224,30 +265,62 @@ function ScoreCard(canvas,overlay,batters)
                 this.controlArea.tpOptions.hide();
             }
 
-            if(this.outs < 2 && this.oneRunnerOn())
+            if(this.outs < 2 && this.runnerOn())
             {
                 if(!this.controlArea.dpOptions.is(":visible"))
                 {
                     this.controlArea.dpOptions.show();
+
                 }
+
             }
             else
             {
                 this.controlArea.dpOptions.hide();
             }
         }
+
+        console.log("tp123="+this.controlArea.tp123Options.is(":visible"));
+        console.log("tp12H="+this.controlArea.tp12HOptions.is(":visible"));
+        console.log("tp13H="+this.controlArea.tp13HOptions.is(":visible"));
+        console.log("tp23H="+this.controlArea.tp23HOptions.is(":visible"));
+
     }
 
-    this.oneRunnerOn = oneRunnerOn;
-    function oneRunnerOn()
+    this.firstAndSecond = firstAndSecond
+    function firstAndSecond()
     {
-        return (this.onFirst!=null || this.onSecond!=null || this.onThird!=null);
+        return (this.onFirst!=null && this.onSecond!=null);
+    }
+
+    this.firstAndThird = firstAndThird
+    function firstAndThird()
+    {
+        return (this.onFirst!=null && this.onThird!=null);
+    }
+
+
+    this.secondAndThird = secondAndThird
+    function secondAndThird()
+    {
+        return (this.onSecond!=null && this.onThird!=null);
     }
 
     this.twoRunnersOn = twoRunnersOn;
     function twoRunnersOn()
     {
-        return (this.onFirst!=null && this.onSecond!=null) || (this.onFirst!=null && this.onThird!=null) || (this.onSecond!=null && this.onThird!=null);
+        return  ( this.firstAndSecond() || this.onCorners() || this.secondAndThird() );
+    }
+
+    this.onCorners = onCorners;
+    function onCorners()
+    {
+        return(this.onFirst!=null&&this.onSecond==null&&this.onThird!=null);
+    }
+    this.areBasesLoaded = areBasesLoaded;
+    function areBasesLoaded()
+    {
+        return(this.onFirst!=null&&this.onSecond!=null&&this.onThird!=null);
     }
 
     this.nextAB = nextAB
@@ -408,17 +481,6 @@ function ScoreCard(canvas,overlay,batters)
             eventBox.onSecond(this.onSecond.playerBox.player.number);
         if(this.onThird!=null)
             eventBox.onThird(this.onThird.playerBox.player.number);
-    }
-
-    this.onCorners = onCorners;
-    function onCorners()
-    {
-        return(this.onFirst!=null&&this.onSecond==null&&this.onThird!=null);
-    }
-    this.areBasesLoaded = areBasesLoaded;
-    function areBasesLoaded()
-    {
-        return(this.onFirst!=null&&this.onSecond!=null&&this.onThird!=null);
     }
 
     this.flyOut = flyOut;
@@ -787,7 +849,11 @@ function ScoreCard(canvas,overlay,batters)
     // must come after the method definition because it is called in the constructor
     this.startInning();
 }
-
+/**
+ *
+ * @param canvas
+ * @constructor
+ */
 function LineScore(canvas)
 {
 
@@ -798,17 +864,18 @@ function ControlArea(scoreCard)
     $( "#tabs" ).tabs();
 
     this.brOptions = $('.brOptions');
-    this.brOptions.hide();
     this.fbOptions = $('.fbOptions');
-    this.fbOptions.hide();
     this.sbOptions = $('.sbOptions');
-    this.sbOptions.hide();
     this.tbOptions = $('.tbOptions');
-    this.tbOptions.hide();
     this.tpOptions = $('.tpOptions');
-    this.tpOptions.hide();
     this.dpOptions = $('.dpOptions');
-    this.dpOptions.hide();
+    this.dp21Options = $('.dp21Options');
+    this.dp31Options = $('.dp31Options');
+    this.dp32Options = $('.dp32Options');
+    this.tp123Options = $('tp123Options');
+    this.tp12HOptions = $('tp12HOptions');
+    this.tp13HOptions = $('tp13HOptions');
+    this.tp23HOptions = $('tp23HOptions');
 
     var foDialog = $( "#fly-out-dialog" ).dialog({
         autoOpen: false,
@@ -1118,6 +1185,26 @@ function ControlArea(scoreCard)
         collapsible: true,
         heightStyle: "content"
     });
+
+    this.hideAll = hideAll;
+    function hideAll()
+    {
+        this.brOptions.hide();
+        this.fbOptions.hide();
+        this.sbOptions.hide();
+        this.tbOptions.hide();
+        this.tpOptions.hide();
+        this.dpOptions.hide();
+        this.dp21Options.hide();
+        this.dp31Options.hide();
+        this.dp32Options.hide();
+        this.tp123Options.hide();
+        this.tp12HOptions.hide();
+        this.tp13HOptions.hide();
+        this.tp23HOptions.hide();
+    }
+
+    this.hideAll();
 }
 
 /**
